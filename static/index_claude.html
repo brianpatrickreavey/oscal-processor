@@ -1,0 +1,3903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OSCAL SSP Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #2c5aa0;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .status-area {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .status-bar {
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        
+        .ssp-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #2c5aa0;
+        }
+        
+        .btn-primary:hover {
+            background: #e6f0ff;
+        }
+        
+        .btn-primary:disabled {
+            background: #cccccc;
+            color: #888888;
+            cursor: not-allowed;
+        }
+        
+        .section-tabs {
+            background: #e6f0ff;
+            border-bottom: 2px solid #2c5aa0;
+            padding: 0;
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .content-area {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.6rem 0.8rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #2c5aa0;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: normal;
+            word-break: keep-all;
+            overflow-wrap: normal;
+            text-align: center;
+            line-height: 1.2;
+            min-width: 0;
+            flex: 0 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(44, 90, 160, 0.1);
+        }
+        
+        .tab-btn.active {
+            color: #1a365d;
+            border-bottom-color: #2c5aa0;
+            background: #f8fbff;
+            font-weight: 500;
+            box-shadow: inset 0 -3px 0 #2c5aa0;
+        }
+        
+        .tab-content {
+            padding: 2rem;
+            min-height: 400px;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            min-width: 400px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-content h3 {
+            margin: 0 0 1.5rem 0;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .modal-actions .btn {
+            min-width: 80px;
+        }
+
+        /* Form Styles */
+        .form-section {
+            padding: 1rem 0;
+        }
+
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        .form-section h4 {
+            color: #34495e;
+            margin: 2rem 0 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            padding: 0.75rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-input textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .security-impact-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .impact-category {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .impact-category label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Implementation Summary Styles */
+        .system-metadata-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .metadata-header h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .metadata-details {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .metadata-details span {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .system-description {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .system-description p {
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+
+        .implementation-sections {
+            margin-top: 2rem;
+        }
+
+        .implementation-sections h4 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .implementation-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .summary-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .summary-card h4 {
+            color: #2c3e50;
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        .summary-card p {
+            color: #6c757d;
+            margin: 0 0 1rem 0;
+            min-height: 1.5rem;
+        }
+
+        .summary-card .btn {
+            width: 100%;
+        }
+
+        /* Parties Styles */
+        .parties-controls {
+            margin-bottom: 2rem;
+            text-align: right;
+        }
+
+        .parties-list {
+            margin-bottom: 2rem;
+        }
+
+        .party-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .party-card h4 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .party-card .party-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .party-card .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+        .party-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .party-form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .party-address {
+            grid-column: 1 / -1;
+            background: #ffffff;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            margin-top: 1rem;
+        }
+
+        .party-address h5 {
+            margin: 0 0 1rem 0;
+            color: #495057;
+            font-size: 1rem;
+        }
+
+        .empty-parties {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        /* Users Styles */
+        .users-controls {
+            margin-bottom: 2rem;
+            text-align: right;
+        }
+
+        .users-list {
+            margin-bottom: 2rem;
+        }
+
+        .user-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .user-card h4 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-card .user-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .user-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .user-form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .user-privileges {
+            grid-column: 1 / -1;
+            background: #ffffff;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            margin-top: 1rem;
+        }
+
+        .user-privileges h5 {
+            margin: 0 0 1rem 0;
+            color: #495057;
+            font-size: 1rem;
+        }
+
+        .privileges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .privilege-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .privilege-item input[type="checkbox"] {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+        }
+
+        .privilege-item label {
+            margin: 0;
+            font-weight: normal;
+            color: #495057;
+            cursor: pointer;
+        }
+
+        .empty-users {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        /* Links & References Styles */
+        .links-controls {
+            margin-bottom: 2rem;
+            text-align: right;
+        }
+
+        .links-list {
+            margin-bottom: 2rem;
+        }
+
+        .link-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .link-card h4 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .link-card .link-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .link-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .link-form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .link-url {
+            grid-column: 1 / -1;
+        }
+
+        .link-description {
+            grid-column: 1 / -1;
+        }
+
+        .link-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .link-type-policy {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .link-type-procedure {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .link-type-standard {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .link-type-guidance {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .link-type-reference {
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        .link-type-other {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+
+        .empty-links {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        /* Attachments Styles */
+        .attachments-controls {
+            margin-bottom: 2rem;
+            text-align: right;
+        }
+
+        .attachments-list {
+            margin-bottom: 2rem;
+        }
+
+        .attachment-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .attachment-card h4 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attachment-card .attachment-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .attachment-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .attachment-form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .attachment-filename {
+            grid-column: 1 / -1;
+        }
+
+        .attachment-description {
+            grid-column: 1 / -1;
+        }
+
+        .attachment-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .attachment-type-document {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .attachment-type-image {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .attachment-type-spreadsheet {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .attachment-type-presentation {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .attachment-type-archive {
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        .attachment-type-other {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+
+        .empty-attachments {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        /* Roles Styles */
+        .roles-controls {
+            margin-bottom: 2rem;
+            text-align: right;
+        }
+
+        .roles-list {
+            margin-bottom: 2rem;
+        }
+
+        .role-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .role-card h4 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .role-card .role-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .role-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .role-form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .role-description {
+            grid-column: 1 / -1;
+        }
+
+        .role-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .role-type-security {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .role-type-operations {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .role-type-compliance {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .role-type-management {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .role-type-technical {
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        .role-type-other {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+
+        .empty-roles {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        /* Components Styles */
+        .components-controls {
+            margin-bottom: 2rem;
+            text-align: right;
+        }
+
+        .components-list {
+            margin-bottom: 2rem;
+        }
+
+        .component-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .component-card h4 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .component-card .component-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .component-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .component-form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .component-description {
+            grid-column: 1 / -1;
+        }
+
+        .component-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .component-type-software {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .component-type-hardware {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .component-type-service {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .component-type-network {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .component-type-policy {
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        .component-type-other {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+
+        .component-status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+        }
+
+        .component-status-operational {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .component-status-under-development {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .component-status-disposition {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .empty-components {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .form-help {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        select[multiple] {
+            min-height: 100px;
+        }
+
+        /* Inventory Items Styles */
+        .inventory-controls {
+            margin-bottom: 2rem;
+            text-align: right;
+        }
+
+        .inventory-list {
+            margin-bottom: 2rem;
+        }
+
+        .inventory-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .inventory-card h4 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inventory-card .inventory-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .inventory-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .inventory-form-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        .inventory-description {
+            grid-column: 1 / -1;
+        }
+
+        .inventory-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .inventory-type-hardware {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .inventory-type-software {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .inventory-type-data {
+            background-color: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .inventory-type-network {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .inventory-type-facility {
+            background-color: #fce4ec;
+            color: #c2185b;
+        }
+
+        .inventory-type-other {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+
+        .inventory-status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+        }
+
+        .inventory-status-operational {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .inventory-status-maintenance {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .inventory-status-retired {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .empty-inventory {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        /* Assessment Results Styles */
+        .assessment-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .assessment-results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .assessment-result-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .assessment-result-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .assessment-result-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .assessment-result-info {
+            flex: 1;
+        }
+
+        .assessment-result-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .assessment-result-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .assessment-result-meta {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .assessment-result-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+
+        .status-pass {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-fail {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-not-tested {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-not-applicable {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
+        .assessment-findings {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .assessment-findings h5 {
+            margin: 0 0 0.5rem 0;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .finding-item {
+            background: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .finding-high {
+            border-left-color: #dc3545;
+        }
+
+        .finding-medium {
+            border-left-color: #fd7e14;
+        }
+
+        .finding-low {
+            border-left-color: #ffc107;
+        }
+
+        .finding-info {
+            border-left-color: #0dcaf0;
+        }
+
+        .empty-assessment-results {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        /* Modal and Form Styles */
+        .modal h3 {
+            margin-bottom: 1rem;
+            color: #2c5aa0;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            color: #6c757d;
+            background: white;
+            padding: 3rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .footer {
+            background: #343a40;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 3rem;
+            font-size: 0.9rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>OSCAL SSP Manager</h1>
+        <div class="status-area">
+            <div class="status-bar">
+                <div>Name: <span id="sspName">n/a</span></div>
+                <div>UUID: <span id="sspUuid">n/a</span></div>
+            </div>
+            <div class="ssp-actions">
+                <button id="createBtn" class="btn btn-primary">Create</button>
+                <button id="loadBtn" class="btn btn-primary">Load</button>
+                <button id="saveBtn" class="btn btn-primary" disabled>Save</button>
+                <button id="closeBtn" class="btn btn-primary" disabled>Close</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="sspTabs" class="section-tabs hidden">
+        <button class="tab-btn active" data-tab="implementation">System Implementation</button>
+        <button class="tab-btn" data-tab="metadata">Metadata</button>
+        <button class="tab-btn" data-tab="characteristics">System Characteristics</button>
+        <button class="tab-btn" data-tab="components">Components</button>
+        <button class="tab-btn" data-tab="users">Users</button>
+        <button class="tab-btn" data-tab="parties">Organizations & Parties</button>
+        <button class="tab-btn" data-tab="roles">Responsible Roles</button>
+        <button class="tab-btn" data-tab="inventory">Inventory Items</button>
+        <button class="tab-btn" data-tab="links">Links & References</button>
+        <button class="tab-btn" data-tab="attachments">Attachments</button>
+        <button class="tab-btn" data-tab="assessment">Assessment Results</button>
+        <button class="tab-btn" data-tab="controls">Control Implementation</button>
+    </div>
+
+    <main class="main-content">
+        <div id="contentArea" class="content-area hidden">
+            <div class="tab-content">
+                <div id="tabContent">
+                    <h2>Metadata</h2>
+                    <p>Configure SSP metadata information here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="welcomeArea" class="welcome-message">
+            <h2>Welcome to OSCAL SSP Manager</h2>
+            <p>Create a new System Security Plan or load an existing one to get started.</p>
+        </div>
+    </main>
+
+    <!-- Load Modal -->
+    <div id="loadModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Load SSP</h3>
+            <div class="form-group">
+                <label for="sspFileSelect">Select SSP File:</label>
+                <select id="sspFileSelect">
+                    <option value="">Loading files...</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button id="loadConfirmBtn" class="btn btn-primary" disabled>Load</button>
+                <button id="loadCancelBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        OSCAL SSP Manager &copy; 2025 | Version 1.0
+    </footer>
+
+    <script>
+        // Application state
+        let currentSSP = null;
+        let hasUnsavedChanges = false;
+
+        // DOM elements
+        const elements = {
+            sspName: document.getElementById('sspName'),
+            sspUuid: document.getElementById('sspUuid'),
+            createBtn: document.getElementById('createBtn'),
+            loadBtn: document.getElementById('loadBtn'),
+            saveBtn: document.getElementById('saveBtn'),
+            closeBtn: document.getElementById('closeBtn'),
+            sspTabs: document.getElementById('sspTabs'),
+            contentArea: document.getElementById('contentArea'),
+            welcomeArea: document.getElementById('welcomeArea'),
+            tabContent: document.getElementById('tabContent'),
+            loadModal: document.getElementById('loadModal'),
+            sspFileSelect: document.getElementById('sspFileSelect'),
+            loadConfirmBtn: document.getElementById('loadConfirmBtn'),
+            loadCancelBtn: document.getElementById('loadCancelBtn')
+        };
+
+        // Tab content definitions
+        const tabContents = {
+            metadata: {
+                title: 'Metadata',
+                content: `
+                    <div class="form-section">
+                        <h3>System Security Plan Metadata</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="sspTitle">Title *</label>
+                                <input type="text" id="sspTitle" class="form-input" placeholder="System Security Plan Title">
+                            </div>
+                            <div class="form-group">
+                                <label for="sspVersion">Version</label>
+                                <input type="text" id="sspVersion" class="form-input" placeholder="1.0">
+                            </div>
+                            <div class="form-group">
+                                <label for="sspDescription">Description</label>
+                                <textarea id="sspDescription" class="form-input" rows="3" placeholder="Brief description of the system and its purpose"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="sspRemarks">Remarks</label>
+                                <textarea id="sspRemarks" class="form-input" rows="2" placeholder="Additional remarks or notes"></textarea>
+                            </div>
+                        </div>
+                        
+                        <h4>Publication Information</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="pubStatus">Publication Status</label>
+                                <select id="pubStatus" class="form-input">
+                                    <option value="">Select status...</option>
+                                    <option value="draft">Draft</option>
+                                    <option value="interim">Interim</option>
+                                    <option value="final">Final</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastModified">Last Modified</label>
+                                <input type="datetime-local" id="lastModified" class="form-input">
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveMetadata()">Save Metadata</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadMetadata()">Refresh</button>
+                        </div>
+                    </div>
+                `
+            },
+            characteristics: {
+                title: 'System Characteristics',
+                content: `
+                    <div class="form-section">
+                        <h3>System Characteristics</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="systemType">System Type *</label>
+                                <select id="systemType" class="form-input">
+                                    <option value="">Select system type...</option>
+                                    <option value="general-support-system">General Support System</option>
+                                    <option value="major-application">Major Application</option>
+                                    <option value="minor-application">Minor Application</option>
+                                    <option value="cloud-service">Cloud Service</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="systemState">System State</label>
+                                <select id="systemState" class="form-input">
+                                    <option value="">Select state...</option>
+                                    <option value="operational">Operational</option>
+                                    <option value="under-development">Under Development</option>
+                                    <option value="under-major-modification">Under Major Modification</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <h4>Security Impact Level</h4>
+                        <div class="security-impact-grid">
+                            <div class="impact-category">
+                                <label>Confidentiality</label>
+                                <select id="confidentialityImpact" class="form-input">
+                                    <option value="">Select...</option>
+                                    <option value="low">Low</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="impact-category">
+                                <label>Integrity</label>
+                                <select id="integrityImpact" class="form-input">
+                                    <option value="">Select...</option>
+                                    <option value="low">Low</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="impact-category">
+                                <label>Availability</label>
+                                <select id="availabilityImpact" class="form-input">
+                                    <option value="">Select...</option>
+                                    <option value="low">Low</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="systemDescription">System Description</label>
+                            <textarea id="systemDescription" class="form-input" rows="4" placeholder="Detailed description of the system, its purpose, and functionality"></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveCharacteristics()">Save Characteristics</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadCharacteristics()">Refresh</button>
+                        </div>
+                    </div>
+                `
+            },
+            parties: {
+                title: 'Organizations & Parties',
+                content: `
+                    <div class="form-section">
+                        <h3>Organizations & Parties</h3>
+                        <p>Define organizations and responsible parties for this system.</p>
+                        
+                        <div class="parties-controls">
+                            <button type="button" class="btn btn-primary" onclick="addParty()">Add New Party</button>
+                        </div>
+                        
+                        <div id="partiesList" class="parties-list">
+                            <!-- Parties will be dynamically loaded here -->
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveParties()">Save All Parties</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadParties()">Refresh</button>
+                        </div>
+                    </div>
+                `
+            },
+            roles: {
+                title: 'Responsible Roles',
+                content: '<p>Define roles and responsibilities.</p>'
+            },
+            implementation: {
+                title: 'System Implementation',
+                content: `
+                    <div class="form-section">
+                        <h3>System Security Plan Overview</h3>
+                        
+                        <!-- System Metadata Summary -->
+                        <div class="system-metadata-summary">
+                            <div class="metadata-header">
+                                <h2 id="system-title-display">System Title</h2>
+                                <div class="metadata-details">
+                                    <span><strong>Version:</strong> <span id="system-version-display">-</span></span>
+                                    <span><strong>Last Modified:</strong> <span id="system-modified-display">-</span></span>
+                                    <span><strong>Status:</strong> <span id="system-status-display">-</span></span>
+                                </div>
+                            </div>
+                            <div class="system-description">
+                                <p id="system-description-display">No description available</p>
+                            </div>
+                        </div>
+                        
+                        <div class="implementation-sections">
+                            <h4>System Implementation Sections</h4>
+                            <p>Manage all aspects of your system security plan using the sections below.</p>
+                            
+                            <div class="implementation-summary">
+                                <!-- Core System Information -->
+                                <div class="summary-card">
+                                    <h4>📋 Metadata</h4>
+                                    <p>System information, title, version, and basic details</p>
+                                    <button onclick="showTab('metadata')" class="btn btn-secondary">Manage Metadata</button>
+                                </div>
+                                
+                                <div class="summary-card">
+                                    <h4>⚙️ System Characteristics</h4>
+                                    <p>System type, state, and security impact levels</p>
+                                    <button onclick="showTab('characteristics')" class="btn btn-secondary">Manage Characteristics</button>
+                                </div>
+                                
+                                <!-- Implementation Components -->
+                                <div class="summary-card">
+                                    <h4>🔧 Components</h4>
+                                    <p id="components-summary">No components defined</p>
+                                    <button onclick="showTab('components')" class="btn btn-secondary">Manage Components</button>
+                                </div>
+                                
+                                <div class="summary-card">
+                                    <h4>👥 Users</h4>
+                                    <p id="users-summary">No users defined</p>
+                                    <button onclick="showTab('users')" class="btn btn-secondary">Manage Users</button>
+                                </div>
+                                
+                                <div class="summary-card">
+                                    <h4>🏢 Organizations & Parties</h4>
+                                    <p id="parties-summary">No parties defined</p>
+                                    <button onclick="showTab('parties')" class="btn btn-secondary">Manage Parties</button>
+                                </div>
+                                
+                                <div class="summary-card">
+                                    <h4>👤 Responsible Roles</h4>
+                                    <p id="roles-summary">No roles defined</p>
+                                    <button onclick="showTab('roles')" class="btn btn-secondary">Manage Roles</button>
+                                </div>
+                                
+                                <div class="summary-card">
+                                    <h4>📦 Inventory Items</h4>
+                                    <p id="inventory-summary">No inventory items defined</p>
+                                    <button onclick="showTab('inventory')" class="btn btn-secondary">Manage Inventory</button>
+                                </div>
+                                
+                                <!-- Supporting Documentation -->
+                                <div class="summary-card">
+                                    <h4>🔗 Links & References</h4>
+                                    <p id="links-summary">No links defined</p>
+                                    <button onclick="showTab('links')" class="btn btn-secondary">Manage Links</button>
+                                </div>
+                                
+                                <div class="summary-card">
+                                    <h4>📎 Attachments</h4>
+                                    <p id="attachments-summary">No attachments defined</p>
+                                    <button onclick="showTab('attachments')" class="btn btn-secondary">Manage Attachments</button>
+                                </div>
+                                
+                                <!-- Assessment & Compliance -->
+                                <div class="summary-card">
+                                    <h4>🔍 Assessment Results</h4>
+                                    <p id="assessment-summary">No assessment results defined</p>
+                                    <button onclick="showTab('assessment')" class="btn btn-secondary">Manage Assessment Results</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            components: {
+                title: 'Components',
+                content: `
+                    <div class="form-section">
+                        <h3>System Components</h3>
+                        <p>Define and manage the components that make up this system, including their types, status, and implementation details.</p>
+                        
+                        <div class="components-controls">
+                            <button type="button" class="btn btn-primary" onclick="addComponent()">Add New Component</button>
+                        </div>
+                        
+                        <div id="componentsList" class="components-list">
+                            <!-- Components will be dynamically loaded here -->
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveComponents()">Save All Components</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadComponents()">Refresh</button>
+                        </div>
+                    </div>
+                `
+            },
+            users: {
+                title: 'Users',
+                content: `
+                    <div class="form-section">
+                        <h3>System Users</h3>
+                        <p>Define users who have access to this system and their roles.</p>
+                        
+                        <div class="users-controls">
+                            <button type="button" class="btn btn-primary" onclick="addUser()">Add New User</button>
+                        </div>
+                        
+                        <div id="usersList" class="users-list">
+                            <!-- Users will be dynamically loaded here -->
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveUsers()">Save All Users</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadUsers()">Refresh</button>
+                        </div>
+                    </div>
+                `
+            },
+            roles: {
+                title: 'Roles',
+                content: `
+                    <div class="form-section">
+                        <h3>Responsible Roles</h3>
+                        <p>Define roles and responsibilities within the system security framework.</p>
+                        
+                        <div class="roles-controls">
+                            <button type="button" class="btn btn-primary" onclick="addRole()">Add New Role</button>
+                        </div>
+                        
+                        <div id="rolesList" class="roles-list">
+                            <!-- Roles will be dynamically loaded here -->
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveRoles()">Save All Roles</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadRoles()">Refresh</button>
+                        </div>
+                    </div>
+                `
+            },
+            inventory: {
+                title: 'Inventory Items',
+                content: `
+                    <div class="form-section">
+                        <h3>System Inventory Items</h3>
+                        <p>Track and manage inventory items, assets, and resources that are part of this system.</p>
+                        
+                        <div class="inventory-controls">
+                            <button type="button" class="btn btn-primary" onclick="addInventoryItem()">Add New Inventory Item</button>
+                        </div>
+                        
+                        <div id="inventoryList" class="inventory-list">
+                            <!-- Inventory items will be dynamically loaded here -->
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveInventory()">Save All Inventory Items</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadInventory()">Refresh</button>
+                        </div>
+                    </div>
+                `
+            },
+            controls: {
+                title: 'Control Implementation',
+                content: '<p>Document control implementations.</p>'
+            },
+            assessment: {
+                title: 'Assessment Results',
+                content: `
+                    <div class="form-section">
+                        <h3>Assessment Results</h3>
+                        <p>Document security assessment findings, control test results, and compliance status.</p>
+                        
+                        <div class="assessment-controls">
+                            <button onclick="addAssessmentResult()" class="btn btn-primary">Add Assessment Result</button>
+                            <button onclick="saveAssessmentResults()" class="btn btn-success">Save Assessment Results</button>
+                        </div>
+                        
+                        <div id="assessmentResultsList" class="assessment-results-list">
+                            <!-- Assessment results will be rendered here -->
+                        </div>
+                    </div>
+                `
+            },
+            links: {
+                title: 'Links & References',
+                content: `
+                    <div class="form-section">
+                        <h3>Links & References</h3>
+                        <p>Manage external links, references, and supporting documentation for this system.</p>
+                        
+                        <div class="links-controls">
+                            <button type="button" class="btn btn-primary" onclick="addLink()">Add New Link</button>
+                        </div>
+                        
+                        <div id="linksList" class="links-list">
+                            <!-- Links will be dynamically loaded here -->
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveLinks()">Save All Links</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadLinks()">Refresh</button>
+                        </div>
+                    </div>
+                `
+            },
+            attachments: {
+                title: 'Attachments',
+                content: `
+                    <div class="form-section">
+                        <h3>Attachments</h3>
+                        <p>Manage file attachments and supporting documents for this system security plan.</p>
+                        
+                        <div class="attachments-controls">
+                            <button type="button" class="btn btn-primary" onclick="addAttachment()">Add New Attachment</button>
+                        </div>
+                        
+                        <div id="attachmentsList" class="attachments-list">
+                            <!-- Attachments will be dynamically loaded here -->
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveAttachments()">Save All Attachments</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadAttachments()">Refresh</button>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        // Update UI based on current state
+        function updateUI() {
+            const hasSSP = currentSSP !== null;
+            
+            // Update status bar
+            elements.sspName.textContent = hasSSP ? currentSSP.name : 'n/a';
+            elements.sspUuid.textContent = hasSSP ? currentSSP.id : 'n/a';
+            
+            // Update buttons
+            elements.createBtn.disabled = hasSSP;
+            elements.loadBtn.disabled = hasSSP;
+            elements.saveBtn.disabled = !hasSSP;
+            elements.closeBtn.disabled = !hasSSP;
+            
+            // Show/hide tabs and content areas
+            if (hasSSP) {
+                elements.sspTabs.classList.remove('hidden');
+                elements.contentArea.classList.remove('hidden');
+                elements.welcomeArea.classList.add('hidden');
+                // Initialize the implementation tab content when SSP is first loaded
+                switchTab('implementation');
+            } else {
+                elements.sspTabs.classList.add('hidden');
+                elements.contentArea.classList.add('hidden');
+                elements.welcomeArea.classList.remove('hidden');
+            }
+        }
+
+        // Tab switching functionality
+        function switchTab(tabId) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            
+            // Update content
+            const tab = tabContents[tabId];
+            elements.tabContent.innerHTML = `
+                <h2>${tab.title}</h2>
+                ${tab.content}
+            `;
+            
+            // Load data for specific tabs
+            if (tabId === 'metadata') {
+                setTimeout(loadMetadata, 100); // Small delay to ensure DOM is ready
+            } else if (tabId === 'characteristics') {
+                setTimeout(loadCharacteristics, 100);
+            } else if (tabId === 'components') {
+                // Load roles first to populate dropdowns, then load components
+                setTimeout(async () => {
+                    await loadRoles(true); // Skip rendering roles UI
+                    await loadComponents();
+                }, 100);
+            } else if (tabId === 'parties') {
+                setTimeout(loadParties, 100);
+            } else if (tabId === 'users') {
+                setTimeout(loadUsers, 100);
+            } else if (tabId === 'roles') {
+                setTimeout(loadRoles, 100);
+            } else if (tabId === 'inventory') {
+                // Load parties and components first for dropdowns, then load inventory
+                setTimeout(async () => {
+                    await loadParties(true);
+                    await loadComponents(true);
+                    await loadInventory();
+                }, 100);
+            } else if (tabId === 'links') {
+                setTimeout(loadLinks, 100);
+            } else if (tabId === 'attachments') {
+                setTimeout(loadAttachments, 100);
+            } else if (tabId === 'implementation') {
+                setTimeout(updateImplementationSummary, 100);
+            } else if (tabId === 'assessment') {
+                setTimeout(loadAssessmentResults, 100);
+            }
+        }
+
+        // Helper function for implementation summary navigation
+        function showTab(tabId) {
+            switchTab(tabId);
+        }
+
+        // Update implementation summary with current data counts
+        async function updateImplementationSummary() {
+            if (!currentSSP) {
+                // Set all to no data if no SSP is loaded
+                document.getElementById('system-title-display').textContent = 'No SSP Loaded';
+                document.getElementById('system-version-display').textContent = '-';
+                document.getElementById('system-modified-display').textContent = '-';
+                document.getElementById('system-status-display').textContent = '-';
+                document.getElementById('system-description-display').textContent = 'No SSP loaded';
+                
+                document.getElementById('components-summary').textContent = 'No SSP loaded';
+                document.getElementById('users-summary').textContent = 'No SSP loaded';
+                document.getElementById('parties-summary').textContent = 'No SSP loaded';
+                document.getElementById('inventory-summary').textContent = 'No SSP loaded';
+                document.getElementById('roles-summary').textContent = 'No SSP loaded';
+                document.getElementById('links-summary').textContent = 'No SSP loaded';
+                document.getElementById('attachments-summary').textContent = 'No SSP loaded';
+                document.getElementById('assessment-summary').textContent = 'No SSP loaded';
+                return;
+            }
+
+            try {
+                // Load and update metadata display
+                const metadataResponse = await fetch(`/api/system/${currentSSP.id}/metadata`);
+                if (metadataResponse.ok) {
+                    const metadataResult = await metadataResponse.json();
+                    const metadata = metadataResult.metadata || {};
+                    document.getElementById('system-title-display').textContent = metadata.title || currentSSP.name || 'Untitled System';
+                    document.getElementById('system-version-display').textContent = metadata.version || '-';
+                    document.getElementById('system-modified-display').textContent = metadata.lastModified || '-';
+                    document.getElementById('system-status-display').textContent = metadata.published || 'draft';
+                    document.getElementById('system-description-display').textContent = metadata.description || currentSSP.description || 'No description available';
+                } else {
+                    // Fallback to currentSSP data if API call fails
+                    const metadata = currentSSP.metadata || {};
+                    document.getElementById('system-title-display').textContent = metadata.title || currentSSP.name || 'Untitled System';
+                    document.getElementById('system-version-display').textContent = metadata.version || '-';
+                    document.getElementById('system-modified-display').textContent = metadata.lastModified || '-';
+                    document.getElementById('system-status-display').textContent = metadata.published || 'draft';
+                    document.getElementById('system-description-display').textContent = metadata.description || currentSSP.description || 'No description available';
+                }
+
+                // Load components count
+                const componentsResponse = await fetch(`/api/system/${currentSSP.id}/components`);
+                if (componentsResponse.ok) {
+                    const componentsResult = await componentsResponse.json();
+                    const componentCount = componentsResult.components ? componentsResult.components.length : 0;
+                    document.getElementById('components-summary').textContent = 
+                        componentCount === 0 ? 'No components defined' : 
+                        `${componentCount} component${componentCount === 1 ? '' : 's'} defined`;
+                }
+
+                // Load users count
+                const usersResponse = await fetch(`/api/system/${currentSSP.id}/users`);
+                if (usersResponse.ok) {
+                    const usersResult = await usersResponse.json();
+                    const userCount = usersResult.users ? usersResult.users.length : 0;
+                    document.getElementById('users-summary').textContent = 
+                        userCount === 0 ? 'No users defined' : 
+                        `${userCount} user${userCount === 1 ? '' : 's'} defined`;
+                }
+
+                // Load parties count
+                const partiesResponse = await fetch(`/api/system/${currentSSP.id}/parties`);
+                if (partiesResponse.ok) {
+                    const partiesResult = await partiesResponse.json();
+                    const partyCount = partiesResult.parties ? partiesResult.parties.length : 0;
+                    document.getElementById('parties-summary').textContent = 
+                        partyCount === 0 ? 'No parties defined' : 
+                        `${partyCount} part${partyCount === 1 ? 'y' : 'ies'} defined`;
+                }
+
+                // Load inventory count
+                const inventoryResponse = await fetch(`/api/system/${currentSSP.id}/inventory`);
+                if (inventoryResponse.ok) {
+                    const inventoryResult = await inventoryResponse.json();
+                    const inventoryCount = inventoryResult.inventory ? inventoryResult.inventory.length : 0;
+                    document.getElementById('inventory-summary').textContent = 
+                        inventoryCount === 0 ? 'No inventory items defined' : 
+                        `${inventoryCount} inventory item${inventoryCount === 1 ? '' : 's'} defined`;
+                }
+
+                // Load roles count
+                const rolesResponse = await fetch(`/api/system/${currentSSP.id}/roles`);
+                if (rolesResponse.ok) {
+                    const rolesResult = await rolesResponse.json();
+                    const roleCount = rolesResult.roles ? rolesResult.roles.length : 0;
+                    document.getElementById('roles-summary').textContent = 
+                        roleCount === 0 ? 'No roles defined' : 
+                        `${roleCount} role${roleCount === 1 ? '' : 's'} defined`;
+                }
+
+                // Load links count
+                const linksResponse = await fetch(`/api/system/${currentSSP.id}/links`);
+                if (linksResponse.ok) {
+                    const linksResult = await linksResponse.json();
+                    const linkCount = linksResult.links ? linksResult.links.length : 0;
+                    document.getElementById('links-summary').textContent = 
+                        linkCount === 0 ? 'No links defined' : 
+                        `${linkCount} link${linkCount === 1 ? '' : 's'} defined`;
+                }
+
+                // Load attachments count
+                const attachmentsResponse = await fetch(`/api/system/${currentSSP.id}/attachments`);
+                if (attachmentsResponse.ok) {
+                    const attachmentsResult = await attachmentsResponse.json();
+                    const attachmentCount = attachmentsResult.attachments ? attachmentsResult.attachments.length : 0;
+                    document.getElementById('attachments-summary').textContent = 
+                        attachmentCount === 0 ? 'No attachments defined' : 
+                        `${attachmentCount} attachment${attachmentCount === 1 ? '' : 's'} defined`;
+                }
+
+                // Load assessment results count
+                const assessmentResponse = await fetch(`/api/system/${currentSSP.id}/assessment-results`);
+                if (assessmentResponse.ok) {
+                    const assessmentResult = await assessmentResponse.json();
+                    const assessmentCount = assessmentResult.assessments ? assessmentResult.assessments.length : 0;
+                    document.getElementById('assessment-summary').textContent = 
+                        assessmentCount === 0 ? 'No assessment results defined' : 
+                        `${assessmentCount} assessment result${assessmentCount === 1 ? '' : 's'} defined`;
+                }
+
+            } catch (error) {
+                console.error('Error loading implementation summary:', error);
+            }
+        }
+
+        // Event handlers
+        elements.createBtn.addEventListener('click', async () => {
+            const name = prompt('Enter SSP Name:');
+            if (!name) return;
+            
+            const description = prompt('Enter SSP Description (optional):') || '';
+            const version = prompt('Enter SSP Version (optional):') || '1.0';
+            
+            try {
+                const response = await fetch('/api/system', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description, version })
+                });
+                
+                const data = await response.json();
+                if (response.ok && data.id) {
+                    currentSSP = { id: data.id, name: data.name };
+                    hasUnsavedChanges = true;
+                    
+                    // Initialize all data arrays for new SSP
+                    partiesData = [];
+                    usersData = [];
+                    rolesData = [];
+                    componentsData = [];
+                    linksData = [];
+                    attachmentsData = [];
+                    inventoryData = [];
+                    
+                    updateUI();
+                } else {
+                    alert('Error creating SSP.');
+                }
+            } catch (error) {
+                alert('Error creating SSP.');
+            }
+        });
+
+        elements.loadBtn.addEventListener('click', showLoadModal);
+
+        // Modal event listeners
+        elements.loadConfirmBtn.addEventListener('click', loadSelectedSSP);
+        elements.loadCancelBtn.addEventListener('click', hideLoadModal);
+        elements.sspFileSelect.addEventListener('change', function() {
+            elements.loadConfirmBtn.disabled = !this.value;
+        });
+
+        // Modal functions
+        async function showLoadModal() {
+            try {
+                const response = await fetch('/api/ssp/files');
+                const files = await response.json();
+                
+                elements.sspFileSelect.innerHTML = '';
+                
+                if (!Array.isArray(files) || files.length === 0) {
+                    elements.sspFileSelect.innerHTML = '<option value="">No SSP files found</option>';
+                    elements.loadConfirmBtn.disabled = true;
+                } else {
+                    elements.sspFileSelect.innerHTML = '<option value="">Select a file...</option>';
+                    files.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = file;
+                        option.textContent = file;
+                        elements.sspFileSelect.appendChild(option);
+                    });
+                    elements.loadConfirmBtn.disabled = true;
+                }
+                
+                elements.loadModal.classList.remove('hidden');
+            } catch (error) {
+                alert('Error loading file list.');
+            }
+        }
+
+        function hideLoadModal() {
+            elements.loadModal.classList.add('hidden');
+            elements.sspFileSelect.innerHTML = '<option value="">Loading files...</option>';
+            elements.loadConfirmBtn.disabled = true;
+        }
+
+        async function loadSelectedSSP() {
+            const filename = elements.sspFileSelect.value;
+            if (!filename) return;
+
+            try {
+                const loadResponse = await fetch('/api/ssp/load_local', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename, overwrite: true })
+                });
+
+                const result = await loadResponse.json();
+                if (loadResponse.ok && result.system_id) {
+                    const sysResponse = await fetch(`/api/system/${result.system_id}`);
+                    const sysData = await sysResponse.json();
+                    
+                    currentSSP = { id: sysData.id, name: sysData.name };
+                    hasUnsavedChanges = false;
+                    
+                    // Initialize all data arrays
+                    partiesData = [];
+                    usersData = [];
+                    rolesData = [];
+                    componentsData = [];
+                    linksData = [];
+                    attachmentsData = [];
+                    inventoryData = [];
+                    
+                    updateUI();
+                    hideLoadModal();
+                } else {
+                    alert('Error loading SSP file.');
+                }
+            } catch (error) {
+                alert('Error loading SSP.');
+            }
+        }
+
+        elements.saveBtn.addEventListener('click', async () => {
+            if (!currentSSP) return;
+            
+            try {
+                const response = await fetch(`/api/ssp/${currentSSP.id}/save`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    hasUnsavedChanges = false;
+                    alert(result.message || 'SSP saved successfully!');
+                } else {
+                    alert('Error saving SSP.');
+                }
+            } catch (error) {
+                alert('Error saving SSP.');
+            }
+        });
+
+        elements.closeBtn.addEventListener('click', () => {
+            if (hasUnsavedChanges) {
+                if (!confirm('You have unsaved changes. Close without saving?')) {
+                    return;
+                }
+            }
+            
+            currentSSP = null;
+            hasUnsavedChanges = false;
+            updateUI();
+        });
+
+        // Tab click handlers
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                switchTab(tabId);
+            });
+        });
+
+        // Metadata functions
+        async function saveMetadata() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            const metadata = {
+                title: document.getElementById('sspTitle').value,
+                version: document.getElementById('sspVersion').value,
+                description: document.getElementById('sspDescription').value,
+                remarks: document.getElementById('sspRemarks').value,
+                published: document.getElementById('pubStatus').value,
+                lastModified: document.getElementById('lastModified').value
+            };
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/metadata`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(metadata)
+                });
+
+                if (response.ok) {
+                    alert('Metadata saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving metadata');
+                }
+            } catch (error) {
+                alert('Error saving metadata');
+            }
+        }
+
+        async function loadMetadata() {
+            if (!currentSSP) return;
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}`);
+                const data = await response.json();
+                
+                if (response.ok && data.metadata) {
+                    const meta = data.metadata;
+                    document.getElementById('sspTitle').value = meta.title || '';
+                    document.getElementById('sspVersion').value = meta.version || '';
+                    document.getElementById('sspDescription').value = meta.description || '';
+                    document.getElementById('sspRemarks').value = meta.remarks || '';
+                    document.getElementById('pubStatus').value = meta.published || '';
+                    
+                    if (meta.lastModified) {
+                        const date = new Date(meta.lastModified);
+                        document.getElementById('lastModified').value = date.toISOString().slice(0, 16);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading metadata:', error);
+            }
+        }
+
+        async function saveCharacteristics() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            const characteristics = {
+                systemType: document.getElementById('systemType').value,
+                systemState: document.getElementById('systemState').value,
+                systemDescription: document.getElementById('systemDescription').value,
+                securityImpactLevel: {
+                    confidentiality: document.getElementById('confidentialityImpact').value,
+                    integrity: document.getElementById('integrityImpact').value,
+                    availability: document.getElementById('availabilityImpact').value
+                }
+            };
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/characteristics`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(characteristics)
+                });
+
+                if (response.ok) {
+                    alert('System characteristics saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving system characteristics');
+                }
+            } catch (error) {
+                alert('Error saving system characteristics');
+            }
+        }
+
+        async function loadCharacteristics() {
+            if (!currentSSP) return;
+
+            try {
+                // Try to get characteristics from the characteristics endpoint
+                const response = await fetch(`/api/system_characteristics/${currentSSP.id}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error) {
+                        document.getElementById('systemType').value = data.systemType || '';
+                        document.getElementById('systemState').value = data.systemState || '';
+                        document.getElementById('systemDescription').value = data.systemDescription || '';
+                        
+                        if (data.securityImpactLevel) {
+                            document.getElementById('confidentialityImpact').value = data.securityImpactLevel.confidentiality || '';
+                            document.getElementById('integrityImpact').value = data.securityImpactLevel.integrity || '';
+                            document.getElementById('availabilityImpact').value = data.securityImpactLevel.availability || '';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading system characteristics:', error);
+            }
+        }
+
+        // Parties management
+        let partiesData = [];
+
+        function addParty() {
+            const newParty = {
+                id: 'party-' + Date.now(),
+                name: '',
+                type: 'organization',
+                email: '',
+                phone: '',
+                address: {
+                    street: '',
+                    city: '',
+                    state: '',
+                    postal: '',
+                    country: 'US'
+                },
+                remarks: ''
+            };
+            partiesData.push(newParty);
+            renderParties();
+        }
+
+        function removeParty(partyId) {
+            if (confirm('Are you sure you want to remove this party?')) {
+                partiesData = partiesData.filter(p => p.id !== partyId);
+                renderParties();
+            }
+        }
+
+        function renderParties() {
+            const container = document.getElementById('partiesList');
+            if (!container) return;
+
+            if (partiesData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-parties">
+                        <h4>No parties defined</h4>
+                        <p>Click "Add New Party" to define organizations and responsible parties for this system.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = partiesData.map(party => `
+                <div class="party-card">
+                    <h4>
+                        ${party.name || 'New Party'}
+                        <div class="party-actions">
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeParty('${party.id}')">Remove</button>
+                        </div>
+                    </h4>
+                    <div class="party-form-grid">
+                        <div class="form-group">
+                            <label>Name *</label>
+                            <input type="text" class="form-input" value="${party.name}" 
+                                   onchange="updateParty('${party.id}', 'name', this.value)" 
+                                   placeholder="Organization or person name">
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select class="form-input" onchange="updateParty('${party.id}', 'type', this.value)">
+                                <option value="organization" ${party.type === 'organization' ? 'selected' : ''}>Organization</option>
+                                <option value="person" ${party.type === 'person' ? 'selected' : ''}>Person</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-input" value="${party.email}" 
+                                   onchange="updateParty('${party.id}', 'email', this.value)" 
+                                   placeholder="contact@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" class="form-input" value="${party.phone}" 
+                                   onchange="updateParty('${party.id}', 'phone', this.value)" 
+                                   placeholder="+1 (555) 123-4567">
+                        </div>
+                        <div class="form-group">
+                            <label>Remarks</label>
+                            <textarea class="form-input" rows="2" 
+                                      onchange="updateParty('${party.id}', 'remarks', this.value)" 
+                                      placeholder="Additional notes or responsibilities">${party.remarks}</textarea>
+                        </div>
+                    </div>
+                    <div class="party-address">
+                        <h5>Address</h5>
+                        <div class="party-form-grid">
+                            <div class="form-group">
+                                <label>Street Address</label>
+                                <input type="text" class="form-input" value="${party.address.street}" 
+                                       onchange="updatePartyAddress('${party.id}', 'street', this.value)" 
+                                       placeholder="123 Main Street">
+                            </div>
+                            <div class="form-group">
+                                <label>City</label>
+                                <input type="text" class="form-input" value="${party.address.city}" 
+                                       onchange="updatePartyAddress('${party.id}', 'city', this.value)" 
+                                       placeholder="Anytown">
+                            </div>
+                            <div class="form-group">
+                                <label>State/Province</label>
+                                <input type="text" class="form-input" value="${party.address.state}" 
+                                       onchange="updatePartyAddress('${party.id}', 'state', this.value)" 
+                                       placeholder="CA">
+                            </div>
+                            <div class="form-group">
+                                <label>Postal Code</label>
+                                <input type="text" class="form-input" value="${party.address.postal}" 
+                                       onchange="updatePartyAddress('${party.id}', 'postal', this.value)" 
+                                       placeholder="12345">
+                            </div>
+                            <div class="form-group">
+                                <label>Country</label>
+                                <select class="form-input" onchange="updatePartyAddress('${party.id}', 'country', this.value)">
+                                    <option value="US" ${party.address.country === 'US' ? 'selected' : ''}>United States</option>
+                                    <option value="CA" ${party.address.country === 'CA' ? 'selected' : ''}>Canada</option>
+                                    <option value="GB" ${party.address.country === 'GB' ? 'selected' : ''}>United Kingdom</option>
+                                    <option value="Other" ${party.address.country === 'Other' ? 'selected' : ''}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateParty(partyId, field, value) {
+            const party = partiesData.find(p => p.id === partyId);
+            if (party) {
+                party[field] = value;
+                // Update the header if name changed
+                if (field === 'name') {
+                    renderParties();
+                }
+            }
+        }
+
+        function updatePartyAddress(partyId, field, value) {
+            const party = partiesData.find(p => p.id === partyId);
+            if (party) {
+                party.address[field] = value;
+            }
+        }
+
+        async function saveParties() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/parties`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ parties: partiesData })
+                });
+
+                if (response.ok) {
+                    alert('Parties saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving parties');
+                }
+            } catch (error) {
+                alert('Error saving parties');
+            }
+        }
+
+        async function loadParties(skipRender = false) {
+            if (!currentSSP) return;
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/parties`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error && Array.isArray(data.parties)) {
+                        partiesData = data.parties;
+                        if (!skipRender) {
+                            renderParties();
+                        }
+                    } else {
+                        partiesData = [];
+                        if (!skipRender) {
+                            renderParties();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading parties:', error);
+                partiesData = [];
+                if (!skipRender) {
+                    renderParties();
+                }
+            }
+        }
+
+        // Users management
+        let usersData = [];
+
+        function addUser() {
+            const newUser = {
+                id: 'user-' + Date.now(),
+                name: '',
+                username: '',
+                email: '',
+                role: 'user',
+                department: '',
+                privileges: {
+                    read: false,
+                    write: false,
+                    admin: false,
+                    audit: false,
+                    backup: false,
+                    network: false
+                },
+                description: ''
+            };
+            usersData.push(newUser);
+            renderUsers();
+        }
+
+        function removeUser(userId) {
+            if (confirm('Are you sure you want to remove this user?')) {
+                usersData = usersData.filter(u => u.id !== userId);
+                renderUsers();
+            }
+        }
+
+        function renderUsers() {
+            const container = document.getElementById('usersList');
+            if (!container) return;
+
+            if (usersData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-users">
+                        <h4>No users defined</h4>
+                        <p>Click "Add New User" to define system users and their access levels.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = usersData.map(user => `
+                <div class="user-card">
+                    <h4>
+                        ${user.name || user.username || 'New User'}
+                        <div class="user-actions">
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeUser('${user.id}')">Remove</button>
+                        </div>
+                    </h4>
+                    <div class="user-form-grid">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" class="form-input" value="${user.name}" 
+                                   onchange="updateUser('${user.id}', 'name', this.value)" 
+                                   placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Username *</label>
+                            <input type="text" class="form-input" value="${user.username}" 
+                                   onchange="updateUser('${user.id}', 'username', this.value)" 
+                                   placeholder="jdoe">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-input" value="${user.email}" 
+                                   onchange="updateUser('${user.id}', 'email', this.value)" 
+                                   placeholder="john.doe@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select class="form-input" onchange="updateUser('${user.id}', 'role', this.value)">
+                                <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
+                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrator</option>
+                                <option value="operator" ${user.role === 'operator' ? 'selected' : ''}>Operator</option>
+                                <option value="auditor" ${user.role === 'auditor' ? 'selected' : ''}>Auditor</option>
+                                <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>Manager</option>
+                                <option value="developer" ${user.role === 'developer' ? 'selected' : ''}>Developer</option>
+                                <option value="contractor" ${user.role === 'contractor' ? 'selected' : ''}>Contractor</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Department</label>
+                            <input type="text" class="form-input" value="${user.department}" 
+                                   onchange="updateUser('${user.id}', 'department', this.value)" 
+                                   placeholder="IT Department">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-input" rows="2" 
+                                      onchange="updateUser('${user.id}', 'description', this.value)" 
+                                      placeholder="User responsibilities and access requirements">${user.description}</textarea>
+                        </div>
+                    </div>
+                    <div class="user-privileges">
+                        <h5>System Privileges</h5>
+                        <div class="privileges-grid">
+                            <div class="privilege-item">
+                                <input type="checkbox" id="read-${user.id}" 
+                                       ${user.privileges.read ? 'checked' : ''} 
+                                       onchange="updateUserPrivilege('${user.id}', 'read', this.checked)">
+                                <label for="read-${user.id}">Read Access</label>
+                            </div>
+                            <div class="privilege-item">
+                                <input type="checkbox" id="write-${user.id}" 
+                                       ${user.privileges.write ? 'checked' : ''} 
+                                       onchange="updateUserPrivilege('${user.id}', 'write', this.checked)">
+                                <label for="write-${user.id}">Write Access</label>
+                            </div>
+                            <div class="privilege-item">
+                                <input type="checkbox" id="admin-${user.id}" 
+                                       ${user.privileges.admin ? 'checked' : ''} 
+                                       onchange="updateUserPrivilege('${user.id}', 'admin', this.checked)">
+                                <label for="admin-${user.id}">Administrative</label>
+                            </div>
+                            <div class="privilege-item">
+                                <input type="checkbox" id="audit-${user.id}" 
+                                       ${user.privileges.audit ? 'checked' : ''} 
+                                       onchange="updateUserPrivilege('${user.id}', 'audit', this.checked)">
+                                <label for="audit-${user.id}">Audit Logs</label>
+                            </div>
+                            <div class="privilege-item">
+                                <input type="checkbox" id="backup-${user.id}" 
+                                       ${user.privileges.backup ? 'checked' : ''} 
+                                       onchange="updateUserPrivilege('${user.id}', 'backup', this.checked)">
+                                <label for="backup-${user.id}">Backup/Restore</label>
+                            </div>
+                            <div class="privilege-item">
+                                <input type="checkbox" id="network-${user.id}" 
+                                       ${user.privileges.network ? 'checked' : ''} 
+                                       onchange="updateUserPrivilege('${user.id}', 'network', this.checked)">
+                                <label for="network-${user.id}">Network Config</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateUser(userId, field, value) {
+            const user = usersData.find(u => u.id === userId);
+            if (user) {
+                user[field] = value;
+                // Update the header if name or username changed
+                if (field === 'name' || field === 'username') {
+                    renderUsers();
+                }
+            }
+        }
+
+        function updateUserPrivilege(userId, privilege, checked) {
+            const user = usersData.find(u => u.id === userId);
+            if (user) {
+                user.privileges[privilege] = checked;
+            }
+        }
+
+        async function saveUsers() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/users`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ users: usersData })
+                });
+
+                if (response.ok) {
+                    alert('Users saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving users');
+                }
+            } catch (error) {
+                alert('Error saving users');
+            }
+        }
+
+        async function loadUsers() {
+            if (!currentSSP) return;
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/users`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error && Array.isArray(data.users)) {
+                        usersData = data.users;
+                        renderUsers();
+                    } else {
+                        usersData = [];
+                        renderUsers();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                usersData = [];
+                renderUsers();
+            }
+        }
+
+        // Links & References management
+        let linksData = [];
+
+        function addLink() {
+            const newLink = {
+                id: 'link-' + Date.now(),
+                title: '',
+                url: '',
+                type: 'reference',
+                description: '',
+                source: '',
+                author: '',
+                datePublished: '',
+                dateAccessed: new Date().toISOString().split('T')[0]
+            };
+            linksData.push(newLink);
+            renderLinks();
+        }
+
+        function removeLink(linkId) {
+            if (confirm('Are you sure you want to remove this link?')) {
+                linksData = linksData.filter(l => l.id !== linkId);
+                renderLinks();
+            }
+        }
+
+        function renderLinks() {
+            const container = document.getElementById('linksList');
+            if (!container) return;
+
+            if (linksData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-links">
+                        <h4>No links or references defined</h4>
+                        <p>Click "Add New Link" to add external references, policies, procedures, and supporting documentation.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = linksData.map(link => `
+                <div class="link-card">
+                    <h4>
+                        ${link.title || 'New Link'}
+                        <span class="link-type-badge link-type-${link.type}">${link.type}</span>
+                        <div class="link-actions">
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeLink('${link.id}')">Remove</button>
+                        </div>
+                    </h4>
+                    <div class="link-form-grid">
+                        <div class="form-group">
+                            <label>Title *</label>
+                            <input type="text" class="form-input" value="${link.title}" 
+                                   onchange="updateLink('${link.id}', 'title', this.value)" 
+                                   placeholder="Document or link title">
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select class="form-input" onchange="updateLink('${link.id}', 'type', this.value)">
+                                <option value="reference" ${link.type === 'reference' ? 'selected' : ''}>Reference</option>
+                                <option value="policy" ${link.type === 'policy' ? 'selected' : ''}>Policy</option>
+                                <option value="procedure" ${link.type === 'procedure' ? 'selected' : ''}>Procedure</option>
+                                <option value="standard" ${link.type === 'standard' ? 'selected' : ''}>Standard</option>
+                                <option value="guidance" ${link.type === 'guidance' ? 'selected' : ''}>Guidance</option>
+                                <option value="other" ${link.type === 'other' ? 'selected' : ''}>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Source/Publisher</label>
+                            <input type="text" class="form-input" value="${link.source}" 
+                                   onchange="updateLink('${link.id}', 'source', this.value)" 
+                                   placeholder="NIST, ISO, Company, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label>Author</label>
+                            <input type="text" class="form-input" value="${link.author}" 
+                                   onchange="updateLink('${link.id}', 'author', this.value)" 
+                                   placeholder="Document author">
+                        </div>
+                        <div class="form-group">
+                            <label>Date Published</label>
+                            <input type="date" class="form-input" value="${link.datePublished}" 
+                                   onchange="updateLink('${link.id}', 'datePublished', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>Date Accessed</label>
+                            <input type="date" class="form-input" value="${link.dateAccessed}" 
+                                   onchange="updateLink('${link.id}', 'dateAccessed', this.value)">
+                        </div>
+                        <div class="form-group link-url">
+                            <label>URL</label>
+                            <input type="url" class="form-input" value="${link.url}" 
+                                   onchange="updateLink('${link.id}', 'url', this.value)" 
+                                   placeholder="https://example.com/document.pdf">
+                        </div>
+                        <div class="form-group link-description">
+                            <label>Description</label>
+                            <textarea class="form-input" rows="3" 
+                                      onchange="updateLink('${link.id}', 'description', this.value)" 
+                                      placeholder="Brief description of the document and its relevance to this system">${link.description}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateLink(linkId, field, value) {
+            const link = linksData.find(l => l.id === linkId);
+            if (link) {
+                link[field] = value;
+                // Update the header if title or type changed
+                if (field === 'title' || field === 'type') {
+                    renderLinks();
+                }
+            }
+        }
+
+        async function saveLinks() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/links`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ links: linksData })
+                });
+
+                if (response.ok) {
+                    alert('Links and references saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving links and references');
+                }
+            } catch (error) {
+                alert('Error saving links and references');
+            }
+        }
+
+        async function loadLinks() {
+            if (!currentSSP) return;
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/links`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error && Array.isArray(data.links)) {
+                        linksData = data.links;
+                        renderLinks();
+                    } else {
+                        linksData = [];
+                        renderLinks();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading links:', error);
+                linksData = [];
+                renderLinks();
+            }
+        }
+
+        // Attachments management
+        let attachmentsData = [];
+
+        function addAttachment() {
+            const newAttachment = {
+                id: 'attachment-' + Date.now(),
+                filename: '',
+                title: '',
+                type: 'document',
+                description: '',
+                mediaType: '',
+                size: '',
+                hash: '',
+                hashAlgorithm: 'SHA-256',
+                dateUploaded: new Date().toISOString().split('T')[0],
+                path: '',
+                base64Content: ''
+            };
+            attachmentsData.push(newAttachment);
+            renderAttachments();
+        }
+
+        function removeAttachment(attachmentId) {
+            if (confirm('Are you sure you want to remove this attachment?')) {
+                attachmentsData = attachmentsData.filter(a => a.id !== attachmentId);
+                renderAttachments();
+            }
+        }
+
+        function renderAttachments() {
+            const container = document.getElementById('attachmentsList');
+            if (!container) return;
+
+            if (attachmentsData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-attachments">
+                        <h4>No attachments defined</h4>
+                        <p>Click "Add New Attachment" to attach supporting files, documents, and evidence to this system security plan.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = attachmentsData.map(attachment => `
+                <div class="attachment-card">
+                    <h4>
+                        ${attachment.title || attachment.filename || 'New Attachment'}
+                        <span class="attachment-type-badge attachment-type-${attachment.type}">${attachment.type}</span>
+                        <div class="attachment-actions">
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeAttachment('${attachment.id}')">Remove</button>
+                        </div>
+                    </h4>
+                    <div class="attachment-form-grid">
+                        <div class="form-group">
+                            <label>Title *</label>
+                            <input type="text" class="form-input" value="${attachment.title}" 
+                                   onchange="updateAttachment('${attachment.id}', 'title', this.value)" 
+                                   placeholder="Attachment title or description">
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select class="form-input" onchange="updateAttachment('${attachment.id}', 'type', this.value)">
+                                <option value="document" ${attachment.type === 'document' ? 'selected' : ''}>Document</option>
+                                <option value="image" ${attachment.type === 'image' ? 'selected' : ''}>Image</option>
+                                <option value="spreadsheet" ${attachment.type === 'spreadsheet' ? 'selected' : ''}>Spreadsheet</option>
+                                <option value="presentation" ${attachment.type === 'presentation' ? 'selected' : ''}>Presentation</option>
+                                <option value="archive" ${attachment.type === 'archive' ? 'selected' : ''}>Archive</option>
+                                <option value="other" ${attachment.type === 'other' ? 'selected' : ''}>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Media Type</label>
+                            <input type="text" class="form-input" value="${attachment.mediaType}" 
+                                   onchange="updateAttachment('${attachment.id}', 'mediaType', this.value)" 
+                                   placeholder="application/pdf, image/png, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label>File Size</label>
+                            <input type="text" class="form-input" value="${attachment.size}" 
+                                   onchange="updateAttachment('${attachment.id}', 'size', this.value)" 
+                                   placeholder="e.g., 2.5 MB, 1024 KB">
+                        </div>
+                        <div class="form-group">
+                            <label>Hash Algorithm</label>
+                            <select class="form-input" onchange="updateAttachment('${attachment.id}', 'hashAlgorithm', this.value)">
+                                <option value="SHA-256" ${attachment.hashAlgorithm === 'SHA-256' ? 'selected' : ''}>SHA-256</option>
+                                <option value="SHA-1" ${attachment.hashAlgorithm === 'SHA-1' ? 'selected' : ''}>SHA-1</option>
+                                <option value="MD5" ${attachment.hashAlgorithm === 'MD5' ? 'selected' : ''}>MD5</option>
+                                <option value="SHA-512" ${attachment.hashAlgorithm === 'SHA-512' ? 'selected' : ''}>SHA-512</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date Uploaded</label>
+                            <input type="date" class="form-input" value="${attachment.dateUploaded}" 
+                                   onchange="updateAttachment('${attachment.id}', 'dateUploaded', this.value)">
+                        </div>
+                        <div class="form-group attachment-filename">
+                            <label>Filename</label>
+                            <input type="text" class="form-input" value="${attachment.filename}" 
+                                   onchange="updateAttachment('${attachment.id}', 'filename', this.value)" 
+                                   placeholder="document.pdf, image.png, etc.">
+                        </div>
+                        <div class="form-group attachment-filename">
+                            <label>File Path</label>
+                            <input type="text" class="form-input" value="${attachment.path}" 
+                                   onchange="updateAttachment('${attachment.id}', 'path', this.value)" 
+                                   placeholder="./attachments/ or URL path">
+                        </div>
+                        <div class="form-group attachment-filename">
+                            <label>Hash Value</label>
+                            <input type="text" class="form-input" value="${attachment.hash}" 
+                                   onchange="updateAttachment('${attachment.id}', 'hash', this.value)" 
+                                   placeholder="File hash for integrity verification">
+                        </div>
+                        <div class="form-group attachment-description">
+                            <label>Description</label>
+                            <textarea class="form-input" rows="3" 
+                                      onchange="updateAttachment('${attachment.id}', 'description', this.value)" 
+                                      placeholder="Description of the attachment and its relevance to this system">${attachment.description}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateAttachment(attachmentId, field, value) {
+            const attachment = attachmentsData.find(a => a.id === attachmentId);
+            if (attachment) {
+                attachment[field] = value;
+                // Update the header if title, filename, or type changed
+                if (field === 'title' || field === 'filename' || field === 'type') {
+                    renderAttachments();
+                }
+            }
+        }
+
+        async function saveAttachments() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/attachments`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ attachments: attachmentsData })
+                });
+
+                if (response.ok) {
+                    alert('Attachments saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving attachments');
+                }
+            } catch (error) {
+                alert('Error saving attachments');
+            }
+        }
+
+        async function loadAttachments() {
+            if (!currentSSP) return;
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/attachments`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error && Array.isArray(data.attachments)) {
+                        attachmentsData = data.attachments;
+                        renderAttachments();
+                    } else {
+                        attachmentsData = [];
+                        renderAttachments();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading attachments:', error);
+                attachmentsData = [];
+                renderAttachments();
+            }
+        }
+
+        // Roles management
+        let rolesData = [];
+
+        function addRole() {
+            const newRole = {
+                id: 'role-' + Date.now(),
+                title: '',
+                type: 'security',
+                description: '',
+                shortName: '',
+                roleId: '',
+                responsibilities: [],
+                remarks: ''
+            };
+            rolesData.push(newRole);
+            renderRoles();
+        }
+
+        function removeRole(roleId) {
+            if (confirm('Are you sure you want to remove this role?')) {
+                rolesData = rolesData.filter(r => r.id !== roleId);
+                renderRoles();
+            }
+        }
+
+        function renderRoles() {
+            const container = document.getElementById('rolesList');
+            if (!container) return;
+
+            if (rolesData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-roles">
+                        <h4>No roles defined</h4>
+                        <p>Click "Add New Role" to define responsible roles and their responsibilities within the system security framework.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = rolesData.map(role => `
+                <div class="role-card">
+                    <h4>
+                        ${role.title || role.shortName || 'New Role'}
+                        <span class="role-type-badge role-type-${role.type}">${role.type}</span>
+                        <div class="role-actions">
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeRole('${role.id}')">Remove</button>
+                        </div>
+                    </h4>
+                    <div class="role-form-grid">
+                        <div class="form-group">
+                            <label>Role Title *</label>
+                            <input type="text" class="form-input" value="${role.title}" 
+                                   onchange="updateRole('${role.id}', 'title', this.value)" 
+                                   placeholder="e.g., System Administrator, ISSO, CISO">
+                        </div>
+                        <div class="form-group">
+                            <label>Short Name</label>
+                            <input type="text" class="form-input" value="${role.shortName}" 
+                                   onchange="updateRole('${role.id}', 'shortName', this.value)" 
+                                   placeholder="e.g., SysAdmin, ISSO">
+                        </div>
+                        <div class="form-group">
+                            <label>Role Type</label>
+                            <select class="form-input" onchange="updateRole('${role.id}', 'type', this.value)">
+                                <option value="security" ${role.type === 'security' ? 'selected' : ''}>Security</option>
+                                <option value="operations" ${role.type === 'operations' ? 'selected' : ''}>Operations</option>
+                                <option value="compliance" ${role.type === 'compliance' ? 'selected' : ''}>Compliance</option>
+                                <option value="management" ${role.type === 'management' ? 'selected' : ''}>Management</option>
+                                <option value="technical" ${role.type === 'technical' ? 'selected' : ''}>Technical</option>
+                                <option value="other" ${role.type === 'other' ? 'selected' : ''}>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Role ID</label>
+                            <input type="text" class="form-input" value="${role.roleId}" 
+                                   onchange="updateRole('${role.id}', 'roleId', this.value)" 
+                                   placeholder="Unique identifier for this role">
+                        </div>
+                        <div class="form-group role-description">
+                            <label>Description</label>
+                            <textarea class="form-input" rows="3" 
+                                      onchange="updateRole('${role.id}', 'description', this.value)" 
+                                      placeholder="Describe the role and its purpose within the system">${role.description}</textarea>
+                        </div>
+                        <div class="form-group role-description">
+                            <label>Responsibilities</label>
+                            <textarea class="form-input" rows="4" 
+                                      onchange="updateRole('${role.id}', 'responsibilities', this.value.split('\\n').filter(r => r.trim()))" 
+                                      placeholder="List key responsibilities (one per line)">${Array.isArray(role.responsibilities) ? role.responsibilities.join('\\n') : ''}</textarea>
+                        </div>
+                        <div class="form-group role-description">
+                            <label>Remarks</label>
+                            <textarea class="form-input" rows="2" 
+                                      onchange="updateRole('${role.id}', 'remarks', this.value)" 
+                                      placeholder="Additional remarks or notes about this role">${role.remarks}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateRole(roleId, field, value) {
+            const role = rolesData.find(r => r.id === roleId);
+            if (role) {
+                role[field] = value;
+                // Update the header if title, shortName, or type changed
+                if (field === 'title' || field === 'shortName' || field === 'type') {
+                    renderRoles();
+                }
+            }
+        }
+
+        async function saveRoles() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/roles`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roles: rolesData })
+                });
+
+                if (response.ok) {
+                    alert('Roles saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving roles');
+                }
+            } catch (error) {
+                alert('Error saving roles');
+            }
+        }
+
+        async function loadRoles(skipRender = false) {
+            if (!currentSSP) return;
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/roles`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error && Array.isArray(data.roles)) {
+                        rolesData = data.roles;
+                        if (!skipRender) {
+                            renderRoles();
+                            // Re-render components if they exist to update role dropdowns
+                            if (componentsData.length > 0) {
+                                renderComponents();
+                            }
+                        }
+                    } else {
+                        rolesData = [];
+                        if (!skipRender) {
+                            renderRoles();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading roles:', error);
+                rolesData = [];
+                if (!skipRender) {
+                    renderRoles();
+                }
+            }
+        }
+
+        // Components management
+        let componentsData = [];
+
+        function addComponent() {
+            const newComponent = {
+                id: 'component-' + Date.now(),
+                uuid: generateUUID(),
+                title: '',
+                type: 'software',
+                description: '',
+                purpose: '',
+                status: {
+                    state: 'operational'
+                },
+                responsibleRoles: [],
+                protocols: [],
+                remarks: ''
+            };
+            componentsData.push(newComponent);
+            renderComponents();
+        }
+
+        function removeComponent(componentId) {
+            if (confirm('Are you sure you want to remove this component?')) {
+                componentsData = componentsData.filter(c => c.id !== componentId);
+                renderComponents();
+            }
+        }
+
+        function renderComponents() {
+            const container = document.getElementById('componentsList');
+            if (!container) return;
+
+            if (componentsData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-components">
+                        <h4>No components defined</h4>
+                        <p>Click "Add New Component" to define system components and their implementation details.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = componentsData.map(component => `
+                <div class="component-card">
+                    <h4>
+                        ${component.title || 'New Component'}
+                        <span class="component-type-badge component-type-${component.type}">${component.type}</span>
+                        <span class="component-status-badge component-status-${component.status.state}">${component.status.state}</span>
+                        <div class="component-actions">
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeComponent('${component.id}')">Remove</button>
+                        </div>
+                    </h4>
+                    <div class="component-form-grid">
+                        <div class="form-group">
+                            <label>Component Title *</label>
+                            <input type="text" class="form-input" value="${component.title}" 
+                                   onchange="updateComponent('${component.id}', 'title', this.value)" 
+                                   placeholder="e.g., Web Server, Database, Firewall">
+                        </div>
+                        <div class="form-group">
+                            <label>Component Type</label>
+                            <select class="form-input" onchange="updateComponent('${component.id}', 'type', this.value)">
+                                <option value="software" ${component.type === 'software' ? 'selected' : ''}>Software</option>
+                                <option value="hardware" ${component.type === 'hardware' ? 'selected' : ''}>Hardware</option>
+                                <option value="service" ${component.type === 'service' ? 'selected' : ''}>Service</option>
+                                <option value="network" ${component.type === 'network' ? 'selected' : ''}>Network</option>
+                                <option value="policy" ${component.type === 'policy' ? 'selected' : ''}>Policy</option>
+                                <option value="other" ${component.type === 'other' ? 'selected' : ''}>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-input" onchange="updateComponentStatus('${component.id}', this.value)">
+                                <option value="operational" ${component.status.state === 'operational' ? 'selected' : ''}>Operational</option>
+                                <option value="under-development" ${component.status.state === 'under-development' ? 'selected' : ''}>Under Development</option>
+                                <option value="disposition" ${component.status.state === 'disposition' ? 'selected' : ''}>Disposition</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Purpose</label>
+                            <input type="text" class="form-input" value="${component.purpose}" 
+                                   onchange="updateComponent('${component.id}', 'purpose', this.value)" 
+                                   placeholder="Brief purpose statement">
+                        </div>
+                        <div class="form-group">
+                            <label>UUID</label>
+                            <input type="text" class="form-input" value="${component.uuid}" 
+                                   onchange="updateComponent('${component.id}', 'uuid', this.value)" 
+                                   placeholder="Unique identifier" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Responsible Roles</label>
+                            <select class="form-input" onchange="updateComponentResponsibleRoles('${component.id}', this)" multiple>
+                                <option value="">Select roles...</option>
+                                ${generateRoleOptions(component.responsibleRoles)}
+                            </select>
+                            <small class="form-help">Hold Ctrl/Cmd to select multiple roles</small>
+                        </div>
+                        <div class="form-group component-description">
+                            <label>Description</label>
+                            <textarea class="form-input" rows="3" 
+                                      onchange="updateComponent('${component.id}', 'description', this.value)" 
+                                      placeholder="Detailed description of the component and its function">${component.description}</textarea>
+                        </div>
+                        <div class="form-group component-description">
+                            <label>Protocols</label>
+                            <textarea class="form-input" rows="2" 
+                                      onchange="updateComponent('${component.id}', 'protocols', this.value.split('\\n').filter(p => p.trim()))" 
+                                      placeholder="Network protocols used (one per line)">${Array.isArray(component.protocols) ? component.protocols.join('\\n') : ''}</textarea>
+                        </div>
+                        <div class="form-group component-description">
+                            <label>Remarks</label>
+                            <textarea class="form-input" rows="2" 
+                                      onchange="updateComponent('${component.id}', 'remarks', this.value)" 
+                                      placeholder="Additional remarks or notes about this component">${component.remarks}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateComponent(componentId, field, value) {
+            const component = componentsData.find(c => c.id === componentId);
+            if (component) {
+                component[field] = value;
+                // Update the header if title, type, or status changed
+                if (field === 'title' || field === 'type') {
+                    renderComponents();
+                }
+            }
+        }
+
+        function updateComponentStatus(componentId, state) {
+            const component = componentsData.find(c => c.id === componentId);
+            if (component) {
+                component.status.state = state;
+                renderComponents();
+            }
+        }
+
+        function generateRoleOptions(selectedRoles) {
+            console.log('Generating role options, rolesData:', rolesData); // Debug log
+            if (!Array.isArray(rolesData) || rolesData.length === 0) {
+                return '<option value="" disabled>No roles defined - go to Roles tab to create roles first</option>';
+            }
+
+            let options = '';
+            rolesData.forEach(role => {
+                const isSelected = Array.isArray(selectedRoles) && 
+                    (selectedRoles.includes(role.roleId) || selectedRoles.includes(role.id));
+                const roleValue = role.roleId || role.id;
+                const roleDisplay = role.title || role.shortName || roleValue;
+                const roleType = role.type ? ` (${role.type})` : '';
+                options += `<option value="${roleValue}" ${isSelected ? 'selected' : ''}>${roleDisplay}${roleType}</option>`;
+            });
+            
+            return options;
+        }
+
+        function updateComponentResponsibleRoles(componentId, selectElement) {
+            // Get all selected options
+            const selectedOptions = Array.from(selectElement.selectedOptions || selectElement.options)
+                .filter(option => option.selected && option.value)
+                .map(option => option.value);
+            
+            const component = componentsData.find(c => c.id === componentId);
+            if (component) {
+                component.responsibleRoles = selectedOptions;
+                // Don't re-render to avoid losing focus, just update the data
+            }
+        }
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        async function saveComponents() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/components`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ components: componentsData })
+                });
+
+                if (response.ok) {
+                    alert('Components saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving components');
+                }
+            } catch (error) {
+                alert('Error saving components');
+            }
+        }
+
+        async function loadComponents(skipRender = false) {
+            if (!currentSSP) return;
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/components`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error && Array.isArray(data.components)) {
+                        componentsData = data.components;
+                        if (!skipRender) {
+                            renderComponents();
+                        }
+                    } else {
+                        componentsData = [];
+                        if (!skipRender) {
+                            renderComponents();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading components:', error);
+                componentsData = [];
+                if (!skipRender) {
+                    renderComponents();
+                }
+            }
+        }
+
+        // Inventory Items management
+        let inventoryData = [];
+
+        function addInventoryItem() {
+            const newItem = {
+                id: 'inventory-' + Date.now(),
+                uuid: generateUUID(),
+                description: '',
+                type: 'hardware',
+                status: 'operational',
+                assetId: '',
+                responsibleParties: [],
+                implementedComponents: [],
+                props: [],
+                remarks: ''
+            };
+            inventoryData.push(newItem);
+            renderInventory();
+        }
+
+        function removeInventoryItem(itemId) {
+            if (confirm('Are you sure you want to remove this inventory item?')) {
+                inventoryData = inventoryData.filter(i => i.id !== itemId);
+                renderInventory();
+            }
+        }
+
+        function renderInventory() {
+            const container = document.getElementById('inventoryList');
+            if (!container) return;
+
+            if (inventoryData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-inventory">
+                        <h4>No inventory items defined</h4>
+                        <p>Click "Add New Inventory Item" to track system assets, hardware, software, and other resources.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = inventoryData.map(item => `
+                <div class="inventory-card">
+                    <h4>
+                        ${item.description || item.assetId || 'New Inventory Item'}
+                        <span class="inventory-type-badge inventory-type-${item.type}">${item.type}</span>
+                        <span class="inventory-status-badge inventory-status-${item.status}">${item.status}</span>
+                        <div class="inventory-actions">
+                            <button type="button" class="btn btn-danger btn-small" onclick="removeInventoryItem('${item.id}')">Remove</button>
+                        </div>
+                    </h4>
+                    <div class="inventory-form-grid">
+                        <div class="form-group">
+                            <label>Asset ID / Name *</label>
+                            <input type="text" class="form-input" value="${item.assetId}" 
+                                   onchange="updateInventoryItem('${item.id}', 'assetId', this.value)" 
+                                   placeholder="e.g., SRV-001, WS-USER-01">
+                        </div>
+                        <div class="form-group">
+                            <label>Item Type</label>
+                            <select class="form-input" onchange="updateInventoryItem('${item.id}', 'type', this.value)">
+                                <option value="hardware" ${item.type === 'hardware' ? 'selected' : ''}>Hardware</option>
+                                <option value="software" ${item.type === 'software' ? 'selected' : ''}>Software</option>
+                                <option value="data" ${item.type === 'data' ? 'selected' : ''}>Data</option>
+                                <option value="network" ${item.type === 'network' ? 'selected' : ''}>Network</option>
+                                <option value="facility" ${item.type === 'facility' ? 'selected' : ''}>Facility</option>
+                                <option value="other" ${item.type === 'other' ? 'selected' : ''}>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-input" onchange="updateInventoryItem('${item.id}', 'status', this.value)">
+                                <option value="operational" ${item.status === 'operational' ? 'selected' : ''}>Operational</option>
+                                <option value="maintenance" ${item.status === 'maintenance' ? 'selected' : ''}>Maintenance</option>
+                                <option value="retired" ${item.status === 'retired' ? 'selected' : ''}>Retired</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>UUID</label>
+                            <input type="text" class="form-input" value="${item.uuid}" 
+                                   onchange="updateInventoryItem('${item.id}', 'uuid', this.value)" 
+                                   placeholder="Unique identifier" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Responsible Parties</label>
+                            <select class="form-input" onchange="updateInventoryResponsibleParties('${item.id}', this)" multiple>
+                                <option value="">Select parties...</option>
+                                ${generatePartyOptions(item.responsibleParties)}
+                            </select>
+                            <small class="form-help">Hold Ctrl/Cmd to select multiple parties</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Implemented Components</label>
+                            <select class="form-input" onchange="updateInventoryComponents('${item.id}', this)" multiple>
+                                <option value="">Select components...</option>
+                                ${generateComponentOptions(item.implementedComponents)}
+                            </select>
+                            <small class="form-help">Hold Ctrl/Cmd to select multiple components</small>
+                        </div>
+                        <div class="form-group inventory-description">
+                            <label>Description</label>
+                            <textarea class="form-input" rows="3" 
+                                      onchange="updateInventoryItem('${item.id}', 'description', this.value)" 
+                                      placeholder="Detailed description of the inventory item">${item.description}</textarea>
+                        </div>
+                        <div class="form-group inventory-description">
+                            <label>Properties (key=value, one per line)</label>
+                            <textarea class="form-input" rows="2" 
+                                      onchange="updateInventoryProps('${item.id}', this.value)" 
+                                      placeholder="manufacturer=Dell\\nmodel=PowerEdge R750\\nserial=ABC123">${formatProps(item.props)}</textarea>
+                        </div>
+                        <div class="form-group inventory-description">
+                            <label>Remarks</label>
+                            <textarea class="form-input" rows="2" 
+                                      onchange="updateInventoryItem('${item.id}', 'remarks', this.value)" 
+                                      placeholder="Additional remarks or notes about this item">${item.remarks}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateInventoryItem(itemId, field, value) {
+            const item = inventoryData.find(i => i.id === itemId);
+            if (item) {
+                item[field] = value;
+                // Update the header if description, assetId, type, or status changed
+                if (field === 'description' || field === 'assetId' || field === 'type' || field === 'status') {
+                    renderInventory();
+                }
+            }
+        }
+
+        function generatePartyOptions(selectedParties) {
+            if (!Array.isArray(partiesData) || partiesData.length === 0) {
+                return '<option value="" disabled>No parties defined - go to Organizations & Parties tab first</option>';
+            }
+
+            let options = '';
+            partiesData.forEach(party => {
+                const isSelected = Array.isArray(selectedParties) && 
+                    (selectedParties.includes(party.uuid) || selectedParties.includes(party.id));
+                const partyValue = party.uuid || party.id;
+                const partyDisplay = party.name || party.emailAddresses?.[0] || partyValue;
+                const partyType = party.type ? ` (${party.type})` : '';
+                options += `<option value="${partyValue}" ${isSelected ? 'selected' : ''}>${partyDisplay}${partyType}</option>`;
+            });
+            
+            return options;
+        }
+
+        function generateComponentOptions(selectedComponents) {
+            if (!Array.isArray(componentsData) || componentsData.length === 0) {
+                return '<option value="" disabled>No components defined - go to Components tab first</option>';
+            }
+
+            let options = '';
+            componentsData.forEach(component => {
+                const isSelected = Array.isArray(selectedComponents) && 
+                    (selectedComponents.includes(component.uuid) || selectedComponents.includes(component.id));
+                const compValue = component.uuid || component.id;
+                const compDisplay = component.title || compValue;
+                const compType = component.type ? ` (${component.type})` : '';
+                options += `<option value="${compValue}" ${isSelected ? 'selected' : ''}>${compDisplay}${compType}</option>`;
+            });
+            
+            return options;
+        }
+
+        function updateInventoryResponsibleParties(itemId, selectElement) {
+            const selectedOptions = Array.from(selectElement.selectedOptions || selectElement.options)
+                .filter(option => option.selected && option.value)
+                .map(option => option.value);
+            
+            const item = inventoryData.find(i => i.id === itemId);
+            if (item) {
+                item.responsibleParties = selectedOptions;
+            }
+        }
+
+        function updateInventoryComponents(itemId, selectElement) {
+            const selectedOptions = Array.from(selectElement.selectedOptions || selectElement.options)
+                .filter(option => option.selected && option.value)
+                .map(option => option.value);
+            
+            const item = inventoryData.find(i => i.id === itemId);
+            if (item) {
+                item.implementedComponents = selectedOptions;
+            }
+        }
+
+        function updateInventoryProps(itemId, propsText) {
+            const item = inventoryData.find(i => i.id === itemId);
+            if (item) {
+                // Parse props from text format (key=value per line)
+                const props = propsText.split('\\n')
+                    .filter(line => line.trim() && line.includes('='))
+                    .map(line => {
+                        const [name, ...valueParts] = line.split('=');
+                        return { name: name.trim(), value: valueParts.join('=').trim() };
+                    });
+                item.props = props;
+            }
+        }
+
+        function formatProps(props) {
+            if (!Array.isArray(props)) return '';
+            return props.map(prop => `${prop.name}=${prop.value}`).join('\\n');
+        }
+
+        async function saveInventory() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/inventory`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ inventory: inventoryData })
+                });
+
+                if (response.ok) {
+                    alert('Inventory items saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving inventory items');
+                }
+            } catch (error) {
+                alert('Error saving inventory items');
+            }
+        }
+
+        async function loadInventory() {
+            if (!currentSSP) return;
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/inventory`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error && Array.isArray(data.inventory)) {
+                        inventoryData = data.inventory;
+                        renderInventory();
+                    } else {
+                        inventoryData = [];
+                        renderInventory();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+                inventoryData = [];
+                renderInventory();
+            }
+        }
+
+        // Assessment Results management
+        let assessmentData = [];
+
+        function addAssessmentResult() {
+            const newAssessment = {
+                id: 'assessment-' + Date.now(),
+                uuid: generateUUID(),
+                title: '',
+                description: '',
+                controlId: '',
+                assessmentMethod: 'test',
+                status: 'not-tested',
+                assessedBy: '',
+                assessmentDate: new Date().toISOString().split('T')[0],
+                findings: [],
+                evidence: '',
+                remediation: '',
+                riskLevel: 'low',
+                remarks: ''
+            };
+            
+            assessmentData.push(newAssessment);
+            renderAssessmentResults();
+            
+            // Auto-focus on the new assessment title
+            setTimeout(() => {
+                const titleInput = document.querySelector(`#title-${newAssessment.id}`);
+                if (titleInput) titleInput.focus();
+            }, 100);
+        }
+
+        function deleteAssessmentResult(assessmentId) {
+            if (confirm('Are you sure you want to delete this assessment result?')) {
+                assessmentData = assessmentData.filter(a => a.id !== assessmentId);
+                renderAssessmentResults();
+                hasUnsavedChanges = true;
+            }
+        }
+
+        function renderAssessmentResults() {
+            const container = document.getElementById('assessmentResultsList');
+            
+            if (assessmentData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-assessment-results">
+                        <h4>No Assessment Results</h4>
+                        <p>No assessment results have been added yet. Click "Add Assessment Result" to get started.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = assessmentData.map(assessment => `
+                <div class="assessment-result-card">
+                    <div class="assessment-result-header">
+                        <div class="assessment-result-info">
+                            <input type="text" id="title-${assessment.id}" placeholder="Assessment Title" 
+                                   value="${assessment.title}" class="assessment-result-title form-input"
+                                   onchange="updateAssessmentField('${assessment.id}', 'title', this.value)">
+                            <div class="assessment-result-meta">
+                                Control: <input type="text" placeholder="Control ID (e.g., AC-2)" 
+                                               value="${assessment.controlId}" class="form-input" style="width: 150px; display: inline-block;"
+                                               onchange="updateAssessmentField('${assessment.id}', 'controlId', this.value)">
+                                <span class="assessment-result-status status-${assessment.status}">${formatAssessmentStatus(assessment.status)}</span>
+                            </div>
+                        </div>
+                        <div class="assessment-result-actions">
+                            <button onclick="deleteAssessmentResult('${assessment.id}')" class="btn btn-sm btn-danger">Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea placeholder="Assessment description" class="form-input" rows="2"
+                                      onchange="updateAssessmentField('${assessment.id}', 'description', this.value)">${assessment.description}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Assessment Method</label>
+                            <select class="form-input" onchange="updateAssessmentField('${assessment.id}', 'assessmentMethod', this.value)">
+                                <option value="test" ${assessment.assessmentMethod === 'test' ? 'selected' : ''}>Test</option>
+                                <option value="examine" ${assessment.assessmentMethod === 'examine' ? 'selected' : ''}>Examine</option>
+                                <option value="interview" ${assessment.assessmentMethod === 'interview' ? 'selected' : ''}>Interview</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-input" onchange="updateAssessmentField('${assessment.id}', 'status', this.value)">
+                                <option value="pass" ${assessment.status === 'pass' ? 'selected' : ''}>Pass</option>
+                                <option value="fail" ${assessment.status === 'fail' ? 'selected' : ''}>Fail</option>
+                                <option value="not-tested" ${assessment.status === 'not-tested' ? 'selected' : ''}>Not Tested</option>
+                                <option value="not-applicable" ${assessment.status === 'not-applicable' ? 'selected' : ''}>Not Applicable</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Risk Level</label>
+                            <select class="form-input" onchange="updateAssessmentField('${assessment.id}', 'riskLevel', this.value)">
+                                <option value="low" ${assessment.riskLevel === 'low' ? 'selected' : ''}>Low</option>
+                                <option value="medium" ${assessment.riskLevel === 'medium' ? 'selected' : ''}>Medium</option>
+                                <option value="high" ${assessment.riskLevel === 'high' ? 'selected' : ''}>High</option>
+                                <option value="critical" ${assessment.riskLevel === 'critical' ? 'selected' : ''}>Critical</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Assessed By</label>
+                            <input type="text" placeholder="Assessor name" class="form-input"
+                                   value="${assessment.assessedBy}"
+                                   onchange="updateAssessmentField('${assessment.id}', 'assessedBy', this.value)">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Assessment Date</label>
+                            <input type="date" class="form-input"
+                                   value="${assessment.assessmentDate}"
+                                   onchange="updateAssessmentField('${assessment.id}', 'assessmentDate', this.value)">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Evidence & Observations</label>
+                        <textarea placeholder="Evidence collected during assessment..." class="form-input" rows="3"
+                                  onchange="updateAssessmentField('${assessment.id}', 'evidence', this.value)">${assessment.evidence}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Remediation Plan</label>
+                        <textarea placeholder="Steps to address findings..." class="form-input" rows="3"
+                                  onchange="updateAssessmentField('${assessment.id}', 'remediation', this.value)">${assessment.remediation}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Remarks</label>
+                        <textarea placeholder="Additional notes..." class="form-input" rows="2"
+                                  onchange="updateAssessmentField('${assessment.id}', 'remarks', this.value)">${assessment.remarks}</textarea>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateAssessmentField(assessmentId, field, value) {
+            const assessment = assessmentData.find(a => a.id === assessmentId);
+            if (assessment) {
+                assessment[field] = value;
+                hasUnsavedChanges = true;
+                
+                // Re-render if status changed to update styling
+                if (field === 'status') {
+                    renderAssessmentResults();
+                }
+            }
+        }
+
+        function formatAssessmentStatus(status) {
+            const statusMap = {
+                'pass': 'Pass',
+                'fail': 'Fail',
+                'not-tested': 'Not Tested',
+                'not-applicable': 'Not Applicable'
+            };
+            return statusMap[status] || status;
+        }
+
+        async function saveAssessmentResults() {
+            if (!currentSSP) {
+                alert('No SSP loaded');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/assessment-results`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ assessments: assessmentData })
+                });
+
+                if (response.ok) {
+                    alert('Assessment results saved successfully');
+                    hasUnsavedChanges = false;
+                } else {
+                    alert('Error saving assessment results');
+                }
+            } catch (error) {
+                alert('Error saving assessment results');
+            }
+        }
+
+        async function loadAssessmentResults() {
+            if (!currentSSP) return;
+
+            try {
+                const response = await fetch(`/api/system/${currentSSP.id}/assessment-results`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error && Array.isArray(data.assessments)) {
+                        assessmentData = data.assessments;
+                        renderAssessmentResults();
+                    } else {
+                        assessmentData = [];
+                        renderAssessmentResults();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading assessment results:', error);
+                assessmentData = [];
+                renderAssessmentResults();
+            }
+        }
+
+        // Initialize UI
+        updateUI();
+    </script>
+</body>
+</html>

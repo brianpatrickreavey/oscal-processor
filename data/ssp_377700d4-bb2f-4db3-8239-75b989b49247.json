@@ -1,0 +1,22 @@
+{
+  "system-security-plan": {
+    "uuid": "377700d4-bb2f-4db3-8239-75b989b49247",
+    "metadata": {
+      "title": "test",
+      "version": null,
+      "description": "etst"
+    },
+    "system-characteristics": {},
+    "responsible-roles": [],
+    "control-implementation": {},
+    "assessment-results": {},
+    "links-references": {},
+    "attachments": {},
+    "system-implementation": {
+      "components": [],
+      "users": [],
+      "parties": [],
+      "inventory-items": []
+    }
+  }
+}

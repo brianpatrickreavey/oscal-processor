@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OSCAL SSP Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <style>
+        .meta-form {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 1em 1.5em;
+            align-items: center;
+            margin-top: 1em;
+        }
+        .meta-form label {
+            text-align: right;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .meta-form input,
+        .meta-form textarea {
+            width: 100%;
+            font-size: 1em;
+            padding: 0.5em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .meta-form button {
+            grid-column: 2 / 3;
+            margin-top: 1em;
+        }
+        .meta-form span {
+            grid-column: 2 / 3;
+        }
+        .ssp-status-table {
+            display: inline-table;
+            margin-top: 0.2em;
+        }
+        .ssp-status-table td {
+            padding: 0 0.5em 0 0.5em;
+            font-size: 1em;
+            vertical-align: top;
+        }
+        body { font-family: Arial, sans-serif; margin: 0; background: #f8f9fa; }
+        header { display: flex; align-items: center; justify-content: space-between; padding: 1em 2em; background: #3399ff; color: #fff; }
+        .status-bar { font-size: 1.1em; margin-right: 2em; }
+        .ssp-actions { display: flex; gap: 1em; }
+        .ssp-actions button { padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 4px; background: #fff; color: #3399ff; cursor: pointer; }
+        .ssp-actions button:disabled { background: #eee; color: #aaa; cursor: not-allowed; }
+        main { max-width: 1000px; margin: 2em auto; padding: 2em; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #3399ff;
+            background: #eaf6ff;
+            position: relative;
+            margin-bottom: 2em;
+            margin-top: -1em;
+        }
+        .tab {
+            padding: 0.7em 0.5em 0.3em 0.5em;
+            font-size: 0.95em;
+            border: none;
+            background: none;
+            color: #3399ff;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: border-bottom 0.2s, background 0.2s;
+            width: 140px;
+            text-align: center;
+            font-weight: 500;
+            box-sizing: border-box;
+        }
+        .tab.active {
+            border-bottom: 3px solid #3399ff;
+            background: #fff;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        #sectionContent { min-height: 200px; }
+        footer { margin-top: 3em; text-align: center; color: #888; font-size: 0.95em; padding: 1em 0; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>OSCAL SSP Manager</h1>
+        <div class="status-bar" id="sspStatusText">
+            <table class="ssp-status-table">
+                <tr>
+                    <td>Name:</td>
+                    <td><span id="sspName">n/a</span></td>
+                </tr>
+                <tr>
+                    <td>UUID:</td>
+                    <td><span id="sspUUID">n/a</span></td>
+                </tr>
+            </table>
+        </div>
+        <div class="ssp-actions">
+            <button id="createSspBtn">Create</button>
+            <button id="loadSspBtn">Load</button>
+            <button id="saveSspBtn" disabled>Save</button>
+            <button id="closeSspBtn" disabled>Close</button>
+        </div>
+    </header>
+    <div class="tabs" id="sectionNav" style="display:none;">
+        <button class="tab" data-section="metadata">Metadata</button>
+        <button class="tab" data-section="characteristics">System Characteristics</button>
+        <button class="tab" data-section="parties">Organizations & Parties</button>
+        <button class="tab" data-section="roles">Responsible Roles</button>
+        <button class="tab" data-section="components">Components</button>
+        <button class="tab" data-section="users">Users</button>
+        <button class="tab" data-section="inventory">Inventory Items</button>
+        <button class="tab" data-section="controls">Control Implementation</button>
+        <button class="tab" data-section="assessment">Assessment Results</button>
+        <button class="tab" data-section="links">Links & References</button>
+        <button class="tab" data-section="attachments">Attachments</button>
+    </div>
+    <main>
+        <div id="sectionContent"><p style="color:#888;">No SSP loaded. Create or load an SSP to begin.</p></div>
+        <!-- Load Modal -->
+        <div id="loadModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:1001;">
+            <div style="background:#fff; max-width:400px; margin:10vh auto; padding:2em; border-radius:8px; box-shadow:0 2px 8px #ccc; position:relative;">
+                <h2>Load SSP from Server</h2>
+                <div id="loadModalList">Loading...</div>
+                <button id="closeLoadModalBtn" style="margin-top:2em;">Cancel</button>
+            </div>
+        </div>
+    </main>
+    <footer>
+        OSCAL SSP Manager &copy; 2025 | Version 1.0
+        <div id="debugSection" style="margin-top:2em; text-align:left; background:#f4f4f4; padding:1em; border-radius:6px; max-width:1000px; margin:auto;">
+            <h3 style="margin-top:0;">Debug Info</h3>
+            <button id="refreshDebugBtn" style="margin-bottom:1em;">Refresh Debug Info</button>
+            <div id="debugLoadedSsps">Loading...</div>
+            <div id="debugRestoreLog" style="margin-top:1em; font-size:0.95em; color:#444;"></div>
+        </div>
+    </footer>
+    <script>
+    window.addEventListener('beforeunload', function() {
+        // Remove SSP from memory on page close/reload
+        if (currentSystemId) {
+            currentSystemId = null;
+            currentSystemName = null;
+            sspUnsaved = false;
+            updateStatusBar();
+            updateButtons();
+        }
+    });
+    let currentSystemId = null;
+    let currentSystemName = null;
+    let sspUnsaved = false;
+    function updateStatusBar() {
+        const nameSpan = document.getElementById('sspName');
+        const uuidSpan = document.getElementById('sspUUID');
+        if (currentSystemId && currentSystemName) {
+            nameSpan.textContent = currentSystemName;
+            uuidSpan.textContent = currentSystemId;
+        } else {
+            nameSpan.textContent = 'n/a';
+            uuidSpan.textContent = 'n/a';
+        }
+        // Persist SSP state in localStorage
+        if (currentSystemId && currentSystemName) {
+            localStorage.setItem('currentSystemId', currentSystemId);
+            localStorage.setItem('currentSystemName', currentSystemName);
+        } else {
+            localStorage.removeItem('currentSystemId');
+            localStorage.removeItem('currentSystemName');
+        }
+    }
+    function updateButtons() {
+        document.getElementById('createSspBtn').disabled = !!currentSystemId;
+        document.getElementById('loadSspBtn').disabled = !!currentSystemId;
+        document.getElementById('saveSspBtn').disabled = !currentSystemId;
+        document.getElementById('closeSspBtn').disabled = !currentSystemId;
+        document.getElementById('sectionNav').style.display = currentSystemId ? '' : 'none';
+        document.getElementById('sectionContent').innerHTML = currentSystemId ? '<p style="color:#888;">Select a section above.</p>' : '<p style="color:#888;">No SSP loaded. Create or load an SSP to begin.</p>';
+    }
+    document.getElementById('createSspBtn').onclick = async function() {
+        if (currentSystemId) return;
+        // Create new SSP on backend
+        const name = prompt('Enter SSP Name:');
+        if (!name) return;
+        const description = prompt('Enter SSP Description (optional):') || '';
+        const version = prompt('Enter SSP Version (optional):') || '';
+        const resp = await fetch('/api/system', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, description, version })
+        });
+        const data = await resp.json();
+        if (resp.ok && data.id) {
+            currentSystemId = data.id;
+            currentSystemName = data.name;
+            sspUnsaved = true;
+            updateStatusBar();
+            updateButtons();
+        } else {
+            alert('Error creating SSP.');
+        }
+    };
+    document.getElementById('loadSspBtn').onclick = async function() {
+        if (currentSystemId) return;
+        document.getElementById('loadModal').style.display = '';
+        const listDiv = document.getElementById('loadModalList');
+        listDiv.textContent = 'Loading...';
+        try {
+            // Get available SSP files from server
+            const resp = await fetch('/api/ssp/files');
+            const files = await resp.json();
+            listDiv.innerHTML = '';
+            if (!Array.isArray(files) || files.length === 0) {
+                listDiv.innerHTML = '<p>No SSP files found.</p>';
+                return;
+            }
+            const select = document.createElement('select');
+            select.id = 'loadSspFileSelect';
+            files.forEach(file => {
+                const opt = document.createElement('option');
+                opt.value = file;
+                opt.textContent = file;
+                select.appendChild(opt);
+            });
+            listDiv.appendChild(select);
+            const btn = document.createElement('button');
+            btn.textContent = 'Load SSP File';
+            btn.style.marginTop = '1em';
+            btn.onclick = async function() {
+                const filename = select.value;
+                // Load selected SSP file into memory
+                const resp = await fetch('/api/ssp/load_local', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename })
+                });
+                const result = await resp.json();
+                if (resp.ok && result.system_id) {
+                    // Now select the loaded system
+                    const sysResp = await fetch(`/api/system/${result.system_id}`);
+                    const sysData = await sysResp.json();
+                    currentSystemId = sysData.id;
+                    currentSystemName = sysData.name;
+                    sspUnsaved = false;
+                    updateStatusBar();
+                    updateButtons();
+                    document.getElementById('loadModal').style.display = 'none';
+                } else if (result.collision) {
+                    alert(result.message);
+                } else {
+                    alert('Error loading SSP file.');
+                }
+            };
+            listDiv.appendChild(btn);
+        } catch (e) {
+            listDiv.innerHTML = '<p>Error loading SSP file list.</p>';
+        }
+    };
+    document.getElementById('closeLoadModalBtn').onclick = function() {
+        document.getElementById('loadModal').style.display = 'none';
+    };
+    document.getElementById('saveSspBtn').onclick = async function() {
+        if (!currentSystemId) return;
+        try {
+            const resp = await fetch(`/api/ssp/${currentSystemId}/save`, {
+                method: 'POST'
+            });
+            const result = await resp.json();
+            if (resp.ok && result.message) {
+                sspUnsaved = false;
+                alert(result.message);
+            } else {
+                alert('Error saving SSP.');
+            }
+        } catch (e) {
+            alert('Error saving SSP.');
+        }
+    };
+    document.getElementById('closeSspBtn').onclick = function() {
+        if (!currentSystemId) return;
+        if (sspUnsaved && !confirm('You have unsaved changes. Close without saving?')) return;
+        currentSystemId = null;
+        currentSystemName = null;
+        sspUnsaved = false;
+        updateStatusBar();
+        updateButtons();
+    };
+    function renderMetadataSection() {
+        if (!currentSystemId) {
+            document.getElementById('sectionContent').innerHTML = '<p style="color:#888;">No SSP loaded. Create or load an SSP to begin.</p>';
+            return;
+        }
+        // Fetch current system data
+        fetch(`/api/system/${currentSystemId}`)
+            .then(resp => resp.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('sectionContent').innerHTML = '<p style="color:#888;">Error loading metadata.</p>';
+                    return;
+                }
+                document.getElementById('sectionContent').innerHTML = `
+                    <h2>Metadata</h2>
+                    <form id="metadataForm" class="meta-form" style="max-width:500px;">
+                        <label for="metaTitle">Title</label>
+                        <input type="text" id="metaTitle" value="${data.name || ''}" required>
+                        <label for="metaVersion">Version</label>
+                        <input type="text" id="metaVersion" value="${data.version || ''}">
+                        <label for="metaDesc">Description</label>
+                        <textarea id="metaDesc" rows="4">${data.description || ''}</textarea>
+                        <button type="submit">Save Metadata</button>
+                        <span id="metaSaveStatus" style="color:#3399ff;"></span>
+                    </form>
+                `;
+                document.getElementById('metadataForm').onsubmit = async function(e) {
+                    e.preventDefault();
+                    const title = document.getElementById('metaTitle').value;
+                    const version = document.getElementById('metaVersion').value;
+                    const description = document.getElementById('metaDesc').value;
+                    const resp = await fetch(`/api/system/${currentSystemId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title, version, description })
+                    });
+                    const result = await resp.json();
+                    if (resp.ok) {
+                        document.getElementById('metaSaveStatus').textContent = 'Saved!';
+                        currentSystemName = title;
+                        updateStatusBar();
+                    } else {
+                        document.getElementById('metaSaveStatus').textContent = 'Error saving.';
+                    }
+                };
+            });
+    }
+
+    document.querySelectorAll('.tab').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const section = btn.getAttribute('data-section');
+            if (section === 'metadata') {
+                renderMetadataSection();
+            } else {
+                document.getElementById('sectionContent').innerHTML = `<h2>${btn.textContent}</h2><p>Section: ${section} (content to be implemented)</p>`;
+            }
+        };
+    });
+    // Restore SSP from localStorage on page load
+    window.addEventListener('DOMContentLoaded', async function() {
+        clearRestoreLog();
+        const savedId = localStorage.getItem('currentSystemId');
+        const savedName = localStorage.getItem('currentSystemName');
+        logRestoreStep(`Page loaded. Saved SSP ID: <b>${savedId || 'none'}</b>`);
+        if (savedId) {
+            // First, check if system is already in memory
+            logRestoreStep('Checking if SSP is already in memory...');
+            const sysResp = await fetch(`/api/system/${savedId}`);
+            const sysData = await sysResp.json();
+            logRestoreStep(`GET /api/system/${savedId} response: ${JSON.stringify(sysData)}`);
+            if (sysResp.ok && sysData.id) {
+                logRestoreStep('SSP found in memory. Restoring UI state.');
+                currentSystemId = sysData.id;
+                currentSystemName = sysData.name;
+                updateStatusBar();
+                updateButtons();
+            } else {
+                // Try to load from disk with overwrite
+                const filename = `ssp_${savedId}.json`;
+                logRestoreStep(`SSP not in memory. Attempting to load from disk: <code>${filename}</code>`);
+                const resp = await fetch('/api/ssp/load_local', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename, overwrite: true })
+                });
+                const result = await resp.json();
+                logRestoreStep(`POST /api/ssp/load_local response: ${JSON.stringify(result)}`);
+                if (resp.ok && result.system_id) {
+                    logRestoreStep('SSP loaded from disk. Restoring UI state.');
+                    const sysResp2 = await fetch(`/api/system/${result.system_id}`);
+                    const sysData2 = await sysResp2.json();
+                    logRestoreStep(`GET /api/system/${result.system_id} response: ${JSON.stringify(sysData2)}`);
+                    currentSystemId = sysData2.id;
+                    currentSystemName = sysData2.name;
+                    updateStatusBar();
+                    updateButtons();
+                } else {
+                    logRestoreStep('Failed to restore SSP from disk.');
+                    localStorage.removeItem('currentSystemId');
+                    localStorage.removeItem('currentSystemName');
+                    document.getElementById('sectionContent').innerHTML = `<div style='color:red;'><b>SSP restore failed:</b><br>File not found: <code>${filename}</code><br>${result.detail || result.message || 'Unknown error.'}</div>`;
+                }
+            }
+        }
+    });
+    updateStatusBar();
+    updateButtons();
+
+    async function renderDebugSection() {
+        const debugDiv = document.getElementById('debugLoadedSsps');
+        try {
+            const resp = await fetch('/api/system/all');
+            const systems = await resp.json();
+            if (!Array.isArray(systems) || systems.length === 0) {
+                debugDiv.innerHTML = '<p>No SSPs loaded in memory.</p>';
+                return;
+            }
+            debugDiv.innerHTML = '<ul>' + systems.map(sys => `<li><b>Name:</b> ${sys.name} <b>UUID:</b> ${sys.id}</li>`).join('') + '</ul>';
+        } catch (e) {
+            debugDiv.innerHTML = '<p>Error loading debug info.</p>';
+        }
+    }
+    document.getElementById('refreshDebugBtn').onclick = renderDebugSection;
+    renderDebugSection();
+
+    function logRestoreStep(msg) {
+        const logDiv = document.getElementById('debugRestoreLog');
+        logDiv.innerHTML += `<div>${msg}</div>`;
+    }
+    function clearRestoreLog() {
+        const logDiv = document.getElementById('debugRestoreLog');
+        logDiv.innerHTML = '';
+    }
+    </script>
+</body>
+</html>

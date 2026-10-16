@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OSCAL SSP Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #f8f9fa; }
+        header { display: flex; align-items: center; justify-content: space-between; padding: 1em 2em; background: #3399ff; color: #fff; }
+        .status-bar { font-size: 1.1em; margin-right: 2em; }
+        .ssp-actions { display: flex; gap: 1em; }
+        .ssp-actions button { padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 4px; background: #fff; color: #3399ff; cursor: pointer; }
+        .ssp-actions button:disabled { background: #eee; color: #aaa; cursor: not-allowed; }
+        main { max-width: 1000px; margin: 2em auto; padding: 2em; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; }
+        .section-nav { display: flex; flex-wrap: wrap; gap: 1em; margin-bottom: 2em; }
+        .section-nav button { padding: 0.5em 1em; font-size: 1em; border: 1px solid #3399ff; border-radius: 4px; background: #eaf6ff; color: #3399ff; cursor: pointer; }
+        .section-nav button.active { background: #3399ff; color: #fff; }
+        #sectionContent { min-height: 200px; }
+        footer { margin-top: 3em; text-align: center; color: #888; font-size: 0.95em; padding: 1em 0; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>OSCAL SSP Manager</h1>
+        <div class="status-bar" id="sspStatusText">Current SSP UUID: n/a Name: n/a</div>
+        <div class="ssp-actions">
+            <button id="createSspBtn">Create</button>
+            <button id="loadSspBtn">Load</button>
+            <button id="saveSspBtn" disabled>Save</button>
+            <button id="closeSspBtn" disabled>Close</button>
+        </div>
+    </header>
+    <main>
+        <div class="section-nav" id="sectionNav" style="display:none;">
+            <button data-section="metadata">Metadata</button>
+            <button data-section="characteristics">System Characteristics</button>
+            <button data-section="parties">Organizations & Parties</button>
+            <button data-section="roles">Responsible Roles</button>
+            <button data-section="components">Components</button>
+            <button data-section="users">Users</button>
+            <button data-section="inventory">Inventory Items</button>
+            <button data-section="controls">Control Implementation</button>
+            <button data-section="assessment">Assessment Results</button>
+            <button data-section="links">Links & References</button>
+            <button data-section="attachments">Attachments</button>
+        </div>
+        <div id="sectionContent"><p style="color:#888;">No SSP loaded. Create or load an SSP to begin.</p></div>
+    </main>
+    <footer>
+        OSCAL SSP Manager &copy; 2025 | Version 1.0
+    </footer>
+    <script>
+    let currentSystemId = null;
+    let currentSystemName = null;
+    let sspUnsaved = false;
+    function updateStatusBar() {
+        const statusText = document.getElementById('sspStatusText');
+        if (currentSystemId && currentSystemName) {
+            statusText.textContent = `Current SSP UUID: ${currentSystemId} Name: ${currentSystemName}`;
+        } else {
+            statusText.textContent = 'Current SSP UUID: n/a Name: n/a';
+        }
+    }
+    function updateButtons() {
+        document.getElementById('createSspBtn').disabled = !!currentSystemId;
+        document.getElementById('loadSspBtn').disabled = !!currentSystemId;
+        document.getElementById('saveSspBtn').disabled = !currentSystemId;
+        document.getElementById('closeSspBtn').disabled = !currentSystemId;
+        document.getElementById('sectionNav').style.display = currentSystemId ? '' : 'none';
+        document.getElementById('sectionContent').innerHTML = currentSystemId ? '<p style="color:#888;">Select a section above.</p>' : '<p style="color:#888;">No SSP loaded. Create or load an SSP to begin.</p>';
+    }
+    document.getElementById('createSspBtn').onclick = function() {
+        if (currentSystemId) return;
+        // Show create form (stub)
+        currentSystemId = 'new-uuid';
+        currentSystemName = 'New SSP';
+        sspUnsaved = true;
+        updateStatusBar();
+        updateButtons();
+    };
+    document.getElementById('loadSspBtn').onclick = function() {
+        if (currentSystemId) return;
+        // Show load modal (stub)
+        currentSystemId = 'loaded-uuid';
+        currentSystemName = 'Loaded SSP';
+        sspUnsaved = false;
+        updateStatusBar();
+        updateButtons();
+    };
+    document.getElementById('saveSspBtn').onclick = function() {
+        if (!currentSystemId) return;
+        // Save logic (stub)
+        sspUnsaved = false;
+        alert('SSP saved!');
+    };
+    document.getElementById('closeSspBtn').onclick = function() {
+        if (!currentSystemId) return;
+        if (sspUnsaved && !confirm('You have unsaved changes. Close without saving?')) return;
+        currentSystemId = null;
+        currentSystemName = null;
+        sspUnsaved = false;
+        updateStatusBar();
+        updateButtons();
+    };
+    document.querySelectorAll('.section-nav button').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('.section-nav button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const section = btn.getAttribute('data-section');
+            document.getElementById('sectionContent').innerHTML = `<h2>${btn.textContent}</h2><p>Section: ${section} (content to be implemented)</p>`;
+        };
+    });
+    updateStatusBar();
+    updateButtons();
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OSCAL SSP Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #f8f9fa; }
+        header { display: flex; align-items: center; justify-content: space-between; padding: 1em 2em; background: #3399ff; color: #fff; }
+        .status-bar { font-size: 1.1em; margin-right: 2em; }
+        .ssp-actions { display: flex; gap: 1em; }
+        .ssp-actions button { padding: 0.5em 1em; font-size: 1em; border: none; border-radius: 4px; background: #fff; color: #3399ff; cursor: pointer; }
+        .ssp-actions button:disabled { background: #eee; color: #aaa; cursor: not-allowed; }
+        main { max-width: 1000px; margin: 2em auto; padding: 2em; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; }
+        .section-nav { display: flex; flex-wrap: wrap; gap: 1em; margin-bottom: 2em; }
+        .section-nav button { padding: 0.5em 1em; font-size: 1em; border: 1px solid #3399ff; border-radius: 4px; background: #eaf6ff; color: #3399ff; cursor: pointer; }
+        .section-nav button.active { background: #3399ff; color: #fff; }
+        #sectionContent { min-height: 200px; }
+        footer { margin-top: 3em; text-align: center; color: #888; font-size: 0.95em; padding: 1em 0; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>OSCAL SSP Manager</h1>
+        <div class="status-bar" id="sspStatusText">Current SSP UUID: n/a Name: n/a</div>
+        <div class="ssp-actions">
+            <button id="createSspBtn">Create</button>
+            <button id="loadSspBtn">Load</button>
+            <button id="saveSspBtn" disabled>Save</button>
+            <button id="closeSspBtn" disabled>Close</button>
+        </div>
+    </header>
+    <main>
+        <div class="section-nav" id="sectionNav" style="display:none;">
+            <button data-section="metadata">Metadata</button>
+            <button data-section="characteristics">System Characteristics</button>
+            <button data-section="parties">Organizations & Parties</button>
+            <button data-section="roles">Responsible Roles</button>
+            <button data-section="components">Components</button>
+            <button data-section="users">Users</button>
+            <button data-section="inventory">Inventory Items</button>
+            <button data-section="controls">Control Implementation</button>
+            <button data-section="assessment">Assessment Results</button>
+            <button data-section="links">Links & References</button>
+            <button data-section="attachments">Attachments</button>
+        </div>
+        <div id="sectionContent"><p style="color:#888;">No SSP loaded. Create or load an SSP to begin.</p></div>
+    </main>
+    <footer>
+        OSCAL SSP Manager &copy; 2025 | Version 1.0
+    </footer>
+    <script>
+    let currentSystemId = null;
+    let currentSystemName = null;
+    let sspUnsaved = false;
+    function updateStatusBar() {
+        const statusText = document.getElementById('sspStatusText');
+        if (currentSystemId && currentSystemName) {
+            statusText.textContent = `Current SSP UUID: ${currentSystemId} Name: ${currentSystemName}`;
+        } else {
+            statusText.textContent = 'Current SSP UUID: n/a Name: n/a';
+        }
+    }
+    function updateButtons() {
+        document.getElementById('createSspBtn').disabled = !!currentSystemId;
+        document.getElementById('loadSspBtn').disabled = !!currentSystemId;
+        document.getElementById('saveSspBtn').disabled = !currentSystemId;
+        document.getElementById('closeSspBtn').disabled = !currentSystemId;
+        document.getElementById('sectionNav').style.display = currentSystemId ? '' : 'none';
+        document.getElementById('sectionContent').innerHTML = currentSystemId ? '<p style="color:#888;">Select a section above.</p>' : '<p style="color:#888;">No SSP loaded. Create or load an SSP to begin.</p>';
+    }
+    document.getElementById('createSspBtn').onclick = function() {
+        if (currentSystemId) return;
+        // Show create form (stub)
+        currentSystemId = 'new-uuid';
+        currentSystemName = 'New SSP';
+        sspUnsaved = true;
+        updateStatusBar();
+        updateButtons();
+    };
+    document.getElementById('loadSspBtn').onclick = function() {
+        if (currentSystemId) return;
+        // Show load modal (stub)
+        currentSystemId = 'loaded-uuid';
+        currentSystemName = 'Loaded SSP';
+        sspUnsaved = false;
+        updateStatusBar();
+        updateButtons();
+    };
+    document.getElementById('saveSspBtn').onclick = function() {
+        if (!currentSystemId) return;
+        // Save logic (stub)
+        sspUnsaved = false;
+        alert('SSP saved!');
+    };
+    document.getElementById('closeSspBtn').onclick = function() {
+        if (!currentSystemId) return;
+        if (sspUnsaved && !confirm('You have unsaved changes. Close without saving?')) return;
+        currentSystemId = null;
+        currentSystemName = null;
+        sspUnsaved = false;
+        updateStatusBar();
+        updateButtons();
+    };
+    document.querySelectorAll('.section-nav button').forEach(btn => {
+        btn.onclick = function() {
+            document.querySelectorAll('.section-nav button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const section = btn.getAttribute('data-section');
+            document.getElementById('sectionContent').innerHTML = `<h2>${btn.textContent}</h2><p>Section: ${section} (content to be implemented)</p>`;
+        };
+    });
+    updateStatusBar();
+    updateButtons();
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OSCAL SSP Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.ico">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; background: #f8f9fa; }
+        h1 { color: #2c3e50; }
+        .nav { margin-bottom: 2em; }
+        .nav button { margin-right: 1em; }
+        .section { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #ccc; padding: 1em; margin-bottom: 2em; }
+        .current-ssp { font-weight: bold; margin-bottom: 1em; }
+        .success { color: green; }
+        .error { color: red; }
+        label { display: block; margin-top: 1em; }
+        input, textarea, select { width: 100%; padding: 0.5em; margin-top: 0.2em; }
+        button { margin-top: 1em; padding: 0.5em 1em; }
+        pre { background:#f4f4f4; padding:1em; border-radius:6px; overflow-x:auto; }
+    </style>
+</head>
+<body>
+    <!-- Main navigation area, visible only when SSP is open -->
+    <section id="mainNav" class="section" style="display:none; margin-top:1em;">
+        <div style="display:flex; flex-wrap:wrap; gap:1em; margin-bottom:1em;">
+            <button class="mainNavBtn" data-section="metadata">Metadata</button>
+            <button class="mainNavBtn" data-section="characteristics">System Characteristics</button>
+            <button class="mainNavBtn" data-section="parties">Organizations & Parties</button>
+            <button class="mainNavBtn" data-section="roles">Responsible Roles</button>
+            <button class="mainNavBtn" data-section="components">Components</button>
+            <button class="mainNavBtn" data-section="users">Users</button>
+            <button class="mainNavBtn" data-section="inventory">Inventory Items</button>
+            <button class="mainNavBtn" data-section="controls">Control Implementation</button>
+            <button class="mainNavBtn" data-section="assessment">Assessment Results</button>
+            <button class="mainNavBtn" data-section="links">Links & References</button>
+            <button class="mainNavBtn" data-section="attachments">Attachments</button>
+        </div>
+        <div id="mainNavContent"></div>
+    </section>
+        // Main area navigation logic (stub)
+        document.querySelectorAll('.mainNavBtn').forEach(btn => {
+            btn.onclick = function() {
+                const section = btn.getAttribute('data-section');
+                document.getElementById('mainNavContent').innerHTML = `<h3>${btn.textContent}</h3><p>Section: ${section} (content to be implemented)</p>`;
+            };
+        });
+    <header>
+        <h1>OSCAL SSP Manager</h1>
+        <div class="nav">
+            <button id="createSspBtn">Create SSP</button>
+            <button id="loadSspBtn">Load SSP</button>
+            <button id="saveSspBtn">Save SSP</button>
+            <button id="closeSspBtn">Close SSP</button>
+            <button id="settingsBtn" style="float:right;">Settings</button>
+        </div>
+        <div id="sspStatusNote" style="width:100%; background:#eaf6ff; border-bottom:2px solid #3399ff; padding:1em 0; text-align:center; font-size:1.2em; font-weight:bold; margin-bottom:2em;">
+            <span id="sspStatusText">Current SSP UUID: n/a Name: n/a</span>
+        </div>
+        <!-- Load Modal -->
+        <div id="loadModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:1001;">
+            <div style="background:#fff; max-width:400px; margin:10vh auto; padding:2em; border-radius:8px; box-shadow:0 2px 8px #ccc; position:relative;">
+                <h2>Load SSP from Server</h2>
+                <div id="loadModalList">Loading...</div>
+                <button id="closeLoadModalBtn" style="margin-top:2em;">Cancel</button>
+            </div>
+        </div>
+    </header>
+    <main>
+    <!-- Settings Modal -->
+    <div id="settingsModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:1000;">
+        <div style="background:#fff; max-width:400px; margin:10vh auto; padding:2em; border-radius:8px; box-shadow:0 2px 8px #ccc; position:relative;">
+            <h2>Settings</h2>
+            <label for="modeToggle">Export/Import Mode:</label>
+            <select id="modeToggle">
+                <option value="local">Local File System</option>
+                <option value="browser">Browser</option>
+            </select>
+            <button id="closeSettingsBtn" style="margin-top:2em;">Close</button>
+        </div>
+    </div>
+        <section id="createSection" class="section" style="display:none;">
+            <h2>Create SSP</h2>
+            <form id="createSystemForm">
+                <label for="systemName">System Name</label>
+                <input type="text" id="systemName" required>
+                <label for="systemDesc">Description</label>
+                <textarea id="systemDesc"></textarea>
+                <button type="submit">Create System</button>
+            </form>
+            <div id="systemResult"></div>
+        <header style="display:flex; align-items:center; justify-content:space-between; padding-bottom:0.5em; border-bottom:2px solid #3399ff; margin-bottom:1em;">
+            <div>
+                <h1 style="margin:0;">OSCAL SSP Manager</h1>
+                <div id="sspStatusNote" style="font-size:1.1em; margin-top:0.2em; color:#2c3e50;">
+                    <span id="sspStatusText">Current SSP UUID: n/a Name: n/a</span>
+                </div>
+            </div>
+            <div class="nav" style="display:flex; gap:1em; align-items:center;">
+                <button id="createSspBtn" style="display:none;">Create SSP</button>
+                <button id="loadSspBtn" style="display:none;">Load SSP</button>
+                <button id="saveSspBtn" style="display:none;">Save SSP</button>
+                <button id="closeSspBtn" style="display:none;">Close SSP</button>
+                <button id="settingsBtn">Settings</button>
+            </div>
+            <!-- Load Modal -->
+            <div id="loadModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:1001;">
+                <div style="background:#fff; max-width:400px; margin:10vh auto; padding:2em; border-radius:8px; box-shadow:0 2px 8px #ccc; position:relative;">
+                    <h2>Load SSP from Server</h2>
+                    <div id="loadModalList">Loading...</div>
+                    <button id="closeLoadModalBtn" style="margin-top:2em;">Cancel</button>
+                </div>
+            </div>
+        </header>
+        // Helper to show/hide SSP buttons
+        function updateSspButtons() {
+            document.getElementById('createSspBtn').style.display = currentSystemId ? 'none' : '';
+            document.getElementById('loadSspBtn').style.display = currentSystemId ? 'none' : '';
+            document.getElementById('saveSspBtn').style.display = currentSystemId ? '' : 'none';
+            document.getElementById('closeSspBtn').style.display = currentSystemId ? '' : 'none';
+        }
+            document.getElementById('editSection').style.display = (page === 'edit') ? 'block' : 'none';
+            if (page === 'edit') renderEditSspForm();
+            if (page === 'load') renderLoadSspList();
+        }
+
+        function updateCurrentSspDisplay() {
+            const statusText = document.getElementById('sspStatusText');
+            if (currentSystemId && currentSystemName) {
+                statusText.textContent = `Current SSP UUID: ${currentSystemId} Name: ${currentSystemName}`;
+            } else {
+                statusText.textContent = 'Current SSP UUID: n/a Name: n/a';
+            }
+            updateSspButtons();
+            document.getElementById('mainNav').style.display = currentSystemId ? '' : 'none';
+        }
+
+        // Create SSP logic
+        document.getElementById('createSystemForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('systemName').value;
+            const description = document.getElementById('systemDesc').value;
+            const resp = await fetch('/api/system', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, description })
+            });
+            const data = await resp.json();
+            if (resp.ok && data.id) {
+                currentSystemId = data.id;
+                currentSystemName = data.name;
+                updateCurrentSspDisplay();
+                document.getElementById('systemResult').innerHTML = `<span class="success">System created! ID: ${data.id}</span>`;
+            } else {
+                document.getElementById('systemResult').innerHTML = `<span class="error">Error creating system.</span>`;
+            }
+        };
+
+        // Load SSP logic
+        async function renderLoadSspList() {
+            const resp = await fetch('/api/system/all');
+            const systems = await resp.json();
+            const listDiv = document.getElementById('loadSspList');
+            listDiv.innerHTML = '';
+            if (!Array.isArray(systems) || systems.length === 0) {
+                listDiv.innerHTML = '<p>No SSPs found.</p>';
+                return;
+            }
+            const select = document.createElement('select');
+            select.id = 'loadSspSelect';
+            systems.forEach(sys => {
+                const opt = document.createElement('option');
+                opt.value = sys.id;
+                opt.textContent = `${sys.name} (${sys.id})`;
+                select.appendChild(opt);
+            });
+            listDiv.appendChild(select);
+            const btn = document.createElement('button');
+            btn.textContent = 'Set as Current SSP';
+            btn.onclick = function() {
+                const sysId = select.value;
+                const sysName = select.options[select.selectedIndex].textContent.split(' (')[0];
+                currentSystemId = sysId;
+                currentSystemName = sysName;
+                updateCurrentSspDisplay();
+                document.getElementById('loadSspResult').innerHTML = `<span class="success">Current SSP set to ${sysName} (${sysId})</span>`;
+            };
+            listDiv.appendChild(btn);
+        }
+
+        // Edit SSP logic
+        async function renderEditSspForm() {
+            const formDiv = document.getElementById('editSspForm');
+            formDiv.innerHTML = '';
+            document.getElementById('editSspResult').innerHTML = '';
+            if (!currentSystemId) {
+                formDiv.innerHTML = '<p>Select or create an SSP to edit.</p>';
+                return;
+            }
+            // Fetch SSP
+            const resp = await fetch(`/api/ssp/${currentSystemId}`);
+            const data = await resp.json();
+            const ssp = data["system-security-plan"];
+            if (!ssp) {
+                formDiv.innerHTML = '<p>SSP not found.</p>';
+                return;
+            }
+            // Metadata form
+            formDiv.innerHTML += `
+                <form id="editMetaForm">
+                    <h3>Metadata</h3>
+                    <label for="editTitle">Title</label>
+                    <input type="text" id="editTitle" value="${ssp.metadata.title || ''}">
+                    <label for="editVersion">Version</label>
+                    <input type="text" id="editVersion" value="${ssp.metadata.version || ''}">
+                    <label for="editDesc">Description</label>
+                    <textarea id="editDesc">${ssp.metadata.description || ''}</textarea>
+                    <button type="submit">Save Metadata</button>
+                </form>
+            `;
+            // Characteristics form
+            const char = ssp["system-characteristics"] || {};
+            formDiv.innerHTML += `
+                <form id="editCharForm">
+                    <h3>Characteristics</h3>
+                    <label for="editType">System Type</label>
+                    <input type="text" id="editType" value="${char.system_type || ''}">
+                    <label for="editPurpose">Purpose</label>
+                    <input type="text" id="editPurpose" value="${char.purpose || ''}">
+                    <label for="editEnv">Environment</label>
+                    <input type="text" id="editEnv" value="${char.environment || ''}">
+                    <label for="editAuth">Authorization Boundary</label>
+                    <input type="text" id="editAuth" value="${char.authorization_boundary || ''}">
+                    <label for="editStatus">Status</label>
+                    <input type="text" id="editStatus" value="${char.status || ''}">
+                    <label for="editRemarks">Remarks</label>
+                    <textarea id="editRemarks">${char.remarks || ''}</textarea>
+                    <button type="submit">Save Characteristics</button>
+                </form>
+            `;
+            // Metadata save handler
+            document.getElementById('editMetaForm').onsubmit = async function(e) {
+                e.preventDefault();
+                const title = document.getElementById('editTitle').value;
+                const version = document.getElementById('editVersion').value;
+                const description = document.getElementById('editDesc').value;
+                const resp = await fetch(`/api/system/${currentSystemId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, version, description })
+                });
+                if (resp.ok) {
+                    document.getElementById('editSspResult').innerHTML = '<span class="success">Metadata updated!</span>';
+                } else {
+                    document.getElementById('editSspResult').innerHTML = '<span class="error">Error updating metadata.</span>';
+                }
+            };
+            // Characteristics save handler
+            document.getElementById('editCharForm').onsubmit = async function(e) {
+                e.preventDefault();
+                const payload = {
+                    system_id: currentSystemId,
+                    system_type: document.getElementById('editType').value,
+                    purpose: document.getElementById('editPurpose').value,
+                    environment: document.getElementById('editEnv').value,
+                    authorization_boundary: document.getElementById('editAuth').value,
+                    status: document.getElementById('editStatus').value,
+                    remarks: document.getElementById('editRemarks').value
+                };
+                const resp = await fetch('/api/system_characteristics', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (resp.ok) {
+                    document.getElementById('editSspResult').innerHTML = '<span class="success">Characteristics updated!</span>';
+                } else {
+                    document.getElementById('editSspResult').innerHTML = '<span class="error">Error updating characteristics.</span>';
+                }
+            };
+        }
+
+        // Button logic for new workflow
+        document.getElementById('createSspBtn').onclick = function() {
+            if (currentSystemId) {
+                alert('Close the current SSP before creating a new one.');
+                return;
+            }
+            showPage('create');
+        };
+        document.getElementById('loadSspBtn').onclick = function() {
+            if (currentSystemId) {
+                alert('Close the current SSP before loading another.');
+                return;
+            }
+            // Show load modal
+            const modal = document.getElementById('loadModal');
+            const listDiv = document.getElementById('loadModalList');
+            modal.style.display = 'block';
+            listDiv.textContent = 'Loading...';
+            fetch('/api/ssp/files').then(resp => resp.json()).then(files => {
+                if (!Array.isArray(files) || files.length === 0) {
+                    listDiv.innerHTML = '<p>No files found in server data directory.</p>';
+                    return;
+                }
+                const select = document.createElement('select');
+                select.id = 'loadModalSelect';
+                files.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f;
+                    opt.textContent = f;
+                    select.appendChild(opt);
+                });
+                listDiv.innerHTML = '';
+                listDiv.appendChild(select);
+                const btn = document.createElement('button');
+                btn.textContent = 'Load Selected File';
+                btn.onclick = async function() {
+                    const filename = select.value;
+                    const resp = await fetch('/api/ssp/load_local', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filename })
+                    });
+                    const data = await resp.json();
+                    if (resp.ok && data.collision) {
+                        alert('An SSP is already loaded with this UUID.');
+                    } else if (resp.ok && data.message && data.system_id) {
+                        currentSystemId = data.system_id;
+                        currentSystemName = filename.replace(/^ssp_|\.json$/g, '');
+                        updateCurrentSspDisplay();
+                        alert(data.message);
+                    } else if (resp.ok && data.message) {
+                        alert(data.message);
+                    } else {
+                        alert('Error loading SSP.');
+                    }
+                    modal.style.display = 'none';
+                };
+                listDiv.appendChild(btn);
+            });
+        };
+        document.getElementById('closeLoadModalBtn').onclick = function() {
+            document.getElementById('loadModal').style.display = 'none';
+        };
+        document.getElementById('saveSspBtn').onclick = async function() {
+            if (!currentSystemId) {
+                alert('No SSP selected.');
+                return;
+            }
+            const resp = await fetch(`/api/ssp/${currentSystemId}/save`, { method: 'POST' });
+            const data = await resp.json();
+            if (resp.ok && data.message) {
+                alert(data.message + '\nCheck your server directory for the exported file.');
+            } else {
+                alert('Error saving SSP.');
+            }
+        };
+        document.getElementById('closeSspBtn').onclick = function() {
+            if (!currentSystemId) {
+                alert('No SSP is currently active.');
+                return;
+            }
+            currentSystemId = null;
+            currentSystemName = null;
+            updateCurrentSspDisplay();
+            alert('SSP closed.');
+            showPage('create');
+        };
+
+
+        // Settings modal logic
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const modeToggle = document.getElementById('modeToggle');
+        let exportImportMode = localStorage.getItem('exportImportMode') || 'local';
+        modeToggle.value = exportImportMode;
+
+        settingsBtn.onclick = function() {
+            settingsModal.style.display = 'block';
+        };
+        closeSettingsBtn.onclick = function() {
+            settingsModal.style.display = 'none';
+        };
+        modeToggle.onchange = function() {
+            exportImportMode = modeToggle.value;
+            localStorage.setItem('exportImportMode', exportImportMode);
+        };
+
+        // Export SSP handler
+        document.getElementById('exportSspBtn').addEventListener('click', async function() {
+            if (!currentSystemId) {
+                alert('No SSP selected.');
+                return;
+            }
+            if (exportImportMode === 'local') {
+                const resp = await fetch(`/api/ssp/${currentSystemId}/save`, { method: 'POST' });
+                const data = await resp.json();
+                if (resp.ok && data.message) {
+                    alert(data.message + '\nCheck your server directory for the exported file.');
+                } else {
+                    alert('Error exporting SSP.');
+                }
+            } else {
+                // Browser mode: fetch SSP JSON and trigger download
+                const resp = await fetch(`/api/ssp/${currentSystemId}`);
+                const data = await resp.json();
+                if (resp.ok && data["system-security-plan"]) {
+                    const filename = `ssp_${currentSystemId}.json`;
+                    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert('Error exporting SSP.');
+                }
+            }
+        });
+
+        // Import SSP handler
+        document.getElementById('importSspBtn').addEventListener('click', function() {
+            if (exportImportMode === 'local') {
+                // Show local import modal
+                const modal = document.getElementById('localImportModal');
+                const listDiv = document.getElementById('localImportList');
+                modal.style.display = 'block';
+                listDiv.textContent = 'Loading...';
+                fetch('/api/ssp/files').then(resp => resp.json()).then(files => {
+                    if (!Array.isArray(files) || files.length === 0) {
+                        listDiv.innerHTML = '<p>No files found in server data directory.</p>';
+                        return;
+                    }
+                    const select = document.createElement('select');
+                    select.id = 'localImportSelect';
+                    files.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f;
+                        opt.textContent = f;
+                        select.appendChild(opt);
+                    });
+                    listDiv.innerHTML = '';
+                    listDiv.appendChild(select);
+                    const btn = document.createElement('button');
+                    btn.textContent = 'Import Selected File';
+                    btn.onclick = async function() {
+                        const filename = select.value;
+                        // Try to import, handle collision warning
+                        const resp = await fetch('/api/ssp/load_local', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ filename })
+                        });
+                        const data = await resp.json();
+                        if (resp.ok && data.collision) {
+                            if (confirm(data.message + '\nOverwrite existing SSP?')) {
+                                // Overwrite
+                                const resp2 = await fetch('/api/ssp/load_local', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ filename, overwrite: true })
+                                });
+                                const data2 = await resp2.json();
+                                if (resp2.ok && data2.message) {
+                                    alert(data2.message);
+                                    location.reload();
+                                } else {
+                                    alert('Error importing SSP.');
+                                }
+                            }
+                        } else if (resp.ok && data.message) {
+                            alert(data.message);
+                            location.reload();
+                        } else {
+                            alert('Error importing SSP.');
+                        }
+                        modal.style.display = 'none';
+                    };
+                    listDiv.appendChild(btn);
+                });
+            } else {
+                document.getElementById('importSspInput').click();
+            }
+        });
+        document.getElementById('importSspInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            // ...existing code...
+        });
+        document.getElementById('closeLocalImportBtn').onclick = function() {
+            document.getElementById('localImportModal').style.display = 'none';
+        };
+
+        showPage('create');
+    });
+    </script>
+</body>
+</html>

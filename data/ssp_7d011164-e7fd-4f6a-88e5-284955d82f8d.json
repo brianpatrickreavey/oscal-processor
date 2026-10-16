@@ -1,0 +1,193 @@
+{
+  "system-security-plan": {
+    "uuid": "7d011164-e7fd-4f6a-88e5-284955d82f8d",
+    "metadata": {
+      "title": "New Title - 7d011164",
+      "version": "test1",
+      "description": "test1",
+      "remarks": "Nothing to report",
+      "published": "draft",
+      "lastModified": "2025-08-16T17:16"
+    },
+    "system-characteristics": {
+      "systemType": "general-support-system",
+      "systemState": "under-development",
+      "systemDescription": "asdfasdf",
+      "securityImpactLevel": {
+        "confidentiality": "moderate",
+        "integrity": "low",
+        "availability": "high"
+      }
+    },
+    "responsible-roles": [
+      {
+        "id": "role-1755386586230",
+        "title": "CISO",
+        "type": "security",
+        "description": "fasdf",
+        "shortName": "CISO",
+        "roleId": "213123",
+        "responsibilities": [
+          "asdf"
+        ],
+        "remarks": "asdf"
+      }
+    ],
+    "control-implementation": {},
+    "assessment-results": [
+      {
+        "id": "assessment-1755455014172",
+        "uuid": "2d0c87b7-88f1-4c89-b7e4-903dc38bcf99",
+        "title": "Assessed!",
+        "description": "we tested it",
+        "controlId": "AC-1",
+        "assessmentMethod": "test",
+        "status": "pass",
+        "assessedBy": "Me",
+        "assessmentDate": "2025-08-17",
+        "findings": [],
+        "evidence": "some stuff",
+        "remediation": "nothing to remediate",
+        "riskLevel": "medium",
+        "remarks": "nothing"
+      }
+    ],
+    "system-implementation": {
+      "components": [
+        {
+          "id": "component-1755389344569",
+          "uuid": "8c36eb16-1ed9-46ac-8dd4-24157f9efb44",
+          "title": "Cloud Service Provider",
+          "type": "service",
+          "description": "sdf",
+          "purpose": "asdf",
+          "status": {
+            "state": "under-development"
+          },
+          "responsibleRoles": [
+            "213123"
+          ],
+          "protocols": [
+            "asfda"
+          ],
+          "remarks": "asdf"
+        }
+      ],
+      "users": [
+        {
+          "id": "user-1755383443680",
+          "name": "Brian Patrick Reavey",
+          "username": "bpreavey",
+          "email": "brian@reavey05.com",
+          "role": "admin",
+          "department": "Security",
+          "privileges": {
+            "read": true,
+            "write": true,
+            "admin": true,
+            "audit": false,
+            "backup": true,
+            "network": true
+          },
+          "description": "stuff and things"
+        },
+        {
+          "id": "user-1755435528023",
+          "name": "Peter William Reavey",
+          "username": "pwr",
+          "email": "peter@reavey05.com",
+          "role": "user",
+          "department": "",
+          "privileges": {
+            "read": true,
+            "write": false,
+            "admin": false,
+            "audit": false,
+            "backup": false,
+            "network": false
+          },
+          "description": ""
+        }
+      ],
+      "parties": [
+        {
+          "id": "party-1755380899711",
+          "name": "Brian Reavey",
+          "type": "person",
+          "email": "brian@reavey05.com",
+          "phone": "4439229582",
+          "address": {
+            "street": "1407 High Street",
+            "city": "Westminster",
+            "state": "MD",
+            "postal": "21158-2725",
+            "country": "US"
+          },
+          "remarks": "what do you do here?"
+        },
+        {
+          "id": "party-1755381540501",
+          "name": "Peter Reavey",
+          "type": "person",
+          "email": "peter@reavey05.com",
+          "phone": "4439229582",
+          "address": {
+            "street": "1407 High Street",
+            "city": "Westminster",
+            "state": "MD",
+            "postal": "21158-2725",
+            "country": "US"
+          },
+          "remarks": ""
+        }
+      ],
+      "inventory-items": [
+        {
+          "id": "inventory-1755391419622",
+          "uuid": "950a8709-81fc-4f51-871f-ac4f37158fd8",
+          "description": "",
+          "type": "hardware",
+          "status": "operational",
+          "assetId": "server-007",
+          "responsibleParties": [
+            "party-1755381540501"
+          ],
+          "implementedComponents": [
+            "8c36eb16-1ed9-46ac-8dd4-24157f9efb44"
+          ],
+          "props": [],
+          "remarks": ""
+        }
+      ]
+    }
+  },
+  "links": [
+    {
+      "id": "link-1755391723128",
+      "title": "testlink",
+      "url": "https://www.protenus.com/",
+      "type": "procedure",
+      "description": "",
+      "source": "Us",
+      "author": "Me",
+      "datePublished": "2025-08-16",
+      "dateAccessed": "2025-08-17"
+    }
+  ],
+  "attachments": [
+    {
+      "id": "attachment-1755391752237",
+      "filename": "attach_me.pdf",
+      "title": "The Good Attachment",
+      "type": "document",
+      "description": "",
+      "mediaType": "PDF",
+      "size": "",
+      "hash": "",
+      "hashAlgorithm": "SHA-256",
+      "dateUploaded": "2025-08-17",
+      "path": "./",
+      "base64Content": ""
+    }
+  ]
+}

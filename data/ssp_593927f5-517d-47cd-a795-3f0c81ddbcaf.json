@@ -1,0 +1,22 @@
+{
+  "system-security-plan": {
+    "uuid": "593927f5-517d-47cd-a795-3f0c81ddbcaf",
+    "metadata": {
+      "title": "BPR SSP 001",
+      "version": "0.1",
+      "description": "2025-08-16 @ 14:38"
+    },
+    "system-characteristics": {},
+    "responsible-roles": [],
+    "control-implementation": {},
+    "assessment-results": {},
+    "links-references": {},
+    "attachments": {},
+    "system-implementation": {
+      "components": [],
+      "users": [],
+      "parties": [],
+      "inventory-items": []
+    }
+  }
+}

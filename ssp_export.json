@@ -1,0 +1,30 @@
+{
+  "system-security-plan": {
+    "uuid": "ef9fee60-f5a7-4e12-a990-b7ca78b566be",
+    "metadata": {
+      "title": "test",
+      "version": "1",
+      "description": "test"
+    },
+    "system-characteristics": {
+      "system_id": "ef9fee60-f5a7-4e12-a990-b7ca78b566be",
+      "system_type": "2",
+      "purpose": "3",
+      "environment": "4",
+      "authorization_boundary": "5",
+      "status": "6",
+      "remarks": "7890"
+    },
+    "responsible-roles": [],
+    "control-implementation": {},
+    "assessment-results": {},
+    "links-references": {},
+    "attachments": {},
+    "system-implementation": {
+      "components": [],
+      "users": [],
+      "parties": [],
+      "inventory-items": []
+    }
+  }
+}
